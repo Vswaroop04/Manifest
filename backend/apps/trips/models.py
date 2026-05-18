@@ -89,7 +89,10 @@ class DayLog(TimeStampedModel):
     day_number = models.PositiveSmallIntegerField()
     date = models.DateField()
     segments = models.JSONField()
-    totals = models.JSONField()
+    total_driving = models.DecimalField(max_digits=5, decimal_places=2)
+    total_on_duty_nd = models.DecimalField(max_digits=5, decimal_places=2)
+    total_off_duty = models.DecimalField(max_digits=5, decimal_places=2)
+    total_sleeper = models.DecimalField(max_digits=5, decimal_places=2)
     recap_70hr = models.DecimalField(max_digits=5, decimal_places=2)
 
     class Meta:
