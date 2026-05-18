@@ -3,7 +3,15 @@ from decimal import Decimal
 
 from rest_framework import serializers
 
-from apps.trips.models import DayLog, Route, Trip, TripEvent
+from apps.trips.models import DayLog, Route, Trip, TripEvent, TripStatus
+
+
+class GeocodeQuerySerializer(serializers.Serializer):
+    q = serializers.CharField(min_length=2, max_length=200)
+
+
+class TripListQuerySerializer(serializers.Serializer):
+    status = serializers.ChoiceField(choices=TripStatus.choices, required=False)
 
 
 class TripPlanRequestSerializer(serializers.Serializer):

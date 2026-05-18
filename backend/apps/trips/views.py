@@ -1,5 +1,6 @@
 import logging
 
+from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.request import Request
@@ -8,6 +9,8 @@ from rest_framework.response import Response
 from apps.trips.exceptions import GeocodingError, RoutingError
 from apps.trips.models import Trip
 from apps.trips.serializers import (
+    GeocodeQuerySerializer,
+    TripListQuerySerializer,
     TripPlanRequestSerializer,
     TripPlanResponseSerializer,
     TripSummarySerializer,
@@ -63,28 +66,32 @@ def plan_trip(request: Request) -> Response:
 
 @api_view(["GET"])
 def geocode_suggest(request: Request) -> Response:
-    query = request.query_params.get("q", "").strip()
-    if not query:
-        return Response(
-            {"detail": "q parameter required."}, status=status.HTTP_400_BAD_REQUEST
-        )
-    return Response(make_geocoder().suggest(query))
+    query_serializer = GeocodeQuerySerializer(data=request.query_params)
+    if not query_serializer.is_valid():
+        return Response(query_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    return Response(make_geocoder().suggest(query_serializer.validated_data["q"]))
 
 
 @api_view(["GET"])
 def trip_detail(request: Request, trip_id: str) -> Response:
-    try:
-        trip = (
-            Trip.objects.select_related("request", "route")
-            .prefetch_related("events", "day_logs")
-            .get(pk=trip_id)
-        )
-    except Trip.DoesNotExist:
-        return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+    trip = get_object_or_404(
+        Trip.objects.select_related("request", "route").prefetch_related(
+            "events", "day_logs"
+        ),
+        pk=trip_id,
+    )
     return Response(TripPlanResponseSerializer(trip).data)
 
 
 @api_view(["GET"])
 def trip_list(request: Request) -> Response:
-    trips = Trip.objects.select_related("request").order_by("-created")
-    return Response(TripSummarySerializer(trips, many=True).data)
+    query_serializer = TripListQuerySerializer(data=request.query_params)
+    if not query_serializer.is_valid():
+        return Response(query_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    qs = Trip.objects.select_related("request").order_by("-created")
+    if status_filter := query_serializer.validated_data.get("status"):
+        qs = qs.filter(status=status_filter)
+
+    return Response(TripSummarySerializer(qs, many=True).data)
