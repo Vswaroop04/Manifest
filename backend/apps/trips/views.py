@@ -1,6 +1,4 @@
 import logging
-from concurrent.futures import ThreadPoolExecutor, as_completed
-from decimal import Decimal
 
 from django.db import transaction
 from rest_framework import status
@@ -16,42 +14,9 @@ from apps.trips.serializers import (
     TripSummarySerializer,
 )
 from apps.trips.services.geocoding import make_geocoder
-from apps.trips.services.hos_calculator import Waypoint, calculate
-from apps.trips.services.log_sheet_builder import build
-from apps.trips.services.route_service import get_route
+from apps.trips.services.trip_planner import plan
 
 logger = logging.getLogger("app")
-
-
-def _geocode_all(
-    current_location: str,
-    pickup_location: str,
-    dropoff_location: str,
-) -> tuple[
-    tuple[float, float],
-    tuple[float, float],
-    tuple[float, float],
-]:
-    geocoder = make_geocoder()
-    results: dict[str, tuple[float, float]] = {}
-    queries = {
-        "current": current_location,
-        "pickup": pickup_location,
-        "dropoff": dropoff_location,
-    }
-
-    with ThreadPoolExecutor(max_workers=3) as executor:
-        futures = {
-            executor.submit(geocoder.geocode, q): key for key, q in queries.items()
-        }
-        for future in as_completed(futures):
-            key = futures[future]
-            coords = future.result()
-            if coords is None:
-                raise GeocodingError(f"Could not geocode {key!r}: {queries[key]!r}")
-            results[key] = coords
-
-    return results["current"], results["pickup"], results["dropoff"]
 
 
 @api_view(["POST"])
@@ -62,50 +27,20 @@ def plan_trip(request: Request) -> Response:
 
     data = serializer.validated_data
 
-    # All external calls happen before opening the transaction
     try:
-        current_coords, pickup_coords, dropoff_coords = _geocode_all(
-            data["current_location"],
-            data["pickup_location"],
-            data["dropoff_location"],
+        trip_plan = plan(
+            current_location=data["current_location"],
+            pickup_location=data["pickup_location"],
+            dropoff_location=data["dropoff_location"],
+            cycle_hours_used=data["cycle_hours_used"],
+            departure_time=data["departure_time"],
         )
     except GeocodingError as exc:
         logger.warning("Geocoding failed", extra={"error": str(exc)})
         return Response({"detail": str(exc)}, status=status.HTTP_502_BAD_GATEWAY)
-
-    waypoints_latlong = [current_coords, pickup_coords, dropoff_coords]
-    try:
-        route_result = get_route(waypoints_latlong)
     except RoutingError as exc:
         logger.warning("Routing failed", extra={"error": str(exc)})
         return Response({"detail": str(exc)}, status=status.HTTP_502_BAD_GATEWAY)
-
-    # Mile markers: pickup is at the fraction of the route from current→pickup,
-    # dropoff is at the end. We approximate using straight-line distance ratio
-    # since the router doesn't return per-leg distances. A single driving-hgv
-    # call with 3 waypoints gives a continuous route so we split proportionally.
-    pickup_waypoint = Waypoint(
-        label=data["pickup_location"],
-        mile_marker=route_result.total_miles / Decimal("2"),
-        event_type="pickup",
-        coords=pickup_coords,
-    )
-    dropoff_waypoint = Waypoint(
-        label=data["dropoff_location"],
-        mile_marker=route_result.total_miles,
-        event_type="dropoff",
-        coords=dropoff_coords,
-    )
-
-    events = calculate(
-        departure_time=data["departure_time"],
-        cycle_hours_used=data["cycle_hours_used"],
-        total_miles=route_result.total_miles,
-        total_drive_secs=route_result.total_drive_secs,
-        waypoints=[pickup_waypoint, dropoff_waypoint],
-    )
-
-    day_logs = build(events)
 
     with transaction.atomic():
         trip_request = TripRequest.objects.create(
@@ -115,23 +50,20 @@ def plan_trip(request: Request) -> Response:
             cycle_hours_used=data["cycle_hours_used"],
             departure_time=data["departure_time"],
         )
-
         trip = Trip.objects.create(
             request=trip_request,
             status="completed",
-            current_coords=list(current_coords),
-            pickup_coords=list(pickup_coords),
-            dropoff_coords=list(dropoff_coords),
+            current_coords=list(trip_plan.current_coords),
+            pickup_coords=list(trip_plan.pickup_coords),
+            dropoff_coords=list(trip_plan.dropoff_coords),
         )
-
         Route.objects.create(
             trip=trip,
-            geometry=route_result.geometry,
-            total_miles=route_result.total_miles,
-            total_drive_secs=route_result.total_drive_secs,
-            used_fallback=route_result.used_fallback,
+            geometry=trip_plan.route.geometry,
+            total_miles=trip_plan.route.total_miles,
+            total_drive_secs=trip_plan.route.total_drive_secs,
+            used_fallback=trip_plan.route.used_fallback,
         )
-
         TripEvent.objects.bulk_create(
             [
                 TripEvent(
@@ -144,10 +76,9 @@ def plan_trip(request: Request) -> Response:
                     mile_marker=ev.mile_marker,
                     metadata=ev.metadata,
                 )
-                for ev in events
+                for ev in trip_plan.events
             ]
         )
-
         DayLog.objects.bulk_create(
             [
                 DayLog(
@@ -168,8 +99,14 @@ def plan_trip(request: Request) -> Response:
                     total_sleeper=dl.total_sleeper,
                     recap_70hr=dl.recap_70hr,
                 )
-                for dl in day_logs
+                for dl in trip_plan.day_logs
             ]
+        )
+
+    if trip_plan.route.used_fallback:
+        logger.warning(
+            "Trip planned with OSRM fallback — truck restrictions not applied",
+            extra={"trip_id": str(trip.pk)},
         )
 
     trip_out = (
@@ -177,13 +114,6 @@ def plan_trip(request: Request) -> Response:
         .prefetch_related("events", "day_logs")
         .get(pk=trip.pk)
     )
-
-    if route_result.used_fallback:
-        logger.warning(
-            "Trip planned with OSRM fallback — truck restrictions not applied",
-            extra={"trip_id": str(trip.pk)},
-        )
-
     return Response(
         TripPlanResponseSerializer(trip_out).data, status=status.HTTP_201_CREATED
     )
@@ -196,9 +126,7 @@ def geocode_suggest(request: Request) -> Response:
         return Response(
             {"detail": "q parameter required."}, status=status.HTTP_400_BAD_REQUEST
         )
-
-    suggestions = make_geocoder().suggest(query)
-    return Response(suggestions)
+    return Response(make_geocoder().suggest(query))
 
 
 @api_view(["GET"])
@@ -211,7 +139,6 @@ def trip_detail(request: Request, trip_id: str) -> Response:
         )
     except Trip.DoesNotExist:
         return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
-
     return Response(TripPlanResponseSerializer(trip).data)
 
 
