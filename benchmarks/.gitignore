@@ -1,0 +1,14 @@
+.env
+
+.venv/
+
+# Ignore generated results except the baseline run
+results/*.json
+!results/baseline_geocoding.json
+!results/baseline_routing.json
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/

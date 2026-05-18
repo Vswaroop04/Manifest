@@ -1,0 +1,279 @@
+{
+  "run_at": "20260518_154631",
+  "results": {
+    "OpenRouteService": {
+      "short_midwest": {
+        "success_rate_pct": 100.0,
+        "latency": {
+          "mean": 759.65,
+          "stdev": 43.01,
+          "min": 717.52,
+          "p50": 741.02,
+          "p90": 807.28,
+          "p95": 814.63,
+          "p99": 820.5,
+          "max": 821.97
+        },
+        "distance_miles_mean": 182.8,
+        "relative_error_pct": {
+          "mean": 0.449,
+          "stdev": 0.0,
+          "p50": 0.449,
+          "p90": 0.449,
+          "p95": 0.449,
+          "p99": 0.449,
+          "max": 0.449
+        },
+        "within_tolerance": true,
+        "has_geometry": true,
+        "has_turn_by_turn": true,
+        "truck_profile": true
+      },
+      "medium_south": {
+        "success_rate_pct": 100.0,
+        "latency": {
+          "mean": 937.73,
+          "stdev": 20.67,
+          "min": 908.05,
+          "p50": 940.57,
+          "p90": 957.09,
+          "p95": 959.27,
+          "p99": 961.02,
+          "max": 961.46
+        },
+        "distance_miles_mean": 451.9,
+        "relative_error_pct": {
+          "mean": 3.86,
+          "stdev": 0.0,
+          "p50": 3.86,
+          "p90": 3.86,
+          "p95": 3.86,
+          "p99": 3.86,
+          "max": 3.86
+        },
+        "within_tolerance": true,
+        "has_geometry": true,
+        "has_turn_by_turn": true,
+        "truck_profile": true
+      },
+      "long_cross_country": {
+        "success_rate_pct": 100.0,
+        "latency": {
+          "mean": 1153.03,
+          "stdev": 27.24,
+          "min": 1112.58,
+          "p50": 1152.3,
+          "p90": 1178.65,
+          "p95": 1180.41,
+          "p99": 1181.82,
+          "max": 1182.17
+        },
+        "distance_miles_mean": 2014.9,
+        "relative_error_pct": {
+          "mean": 0.251,
+          "stdev": 0.0,
+          "p50": 0.251,
+          "p90": 0.251,
+          "p95": 0.251,
+          "p99": 0.251,
+          "max": 0.251
+        },
+        "within_tolerance": true,
+        "has_geometry": true,
+        "has_turn_by_turn": true,
+        "truck_profile": true
+      },
+      "very_long_coast_to_coast": {
+        "success_rate_pct": 100.0,
+        "latency": {
+          "mean": 1152.69,
+          "stdev": 50.99,
+          "min": 1082.28,
+          "p50": 1174.37,
+          "p90": 1196.08,
+          "p95": 1197.82,
+          "p99": 1199.21,
+          "max": 1199.55
+        },
+        "distance_miles_mean": 2793.2,
+        "relative_error_pct": {
+          "mean": 0.116,
+          "stdev": 0.0,
+          "p50": 0.116,
+          "p90": 0.116,
+          "p95": 0.116,
+          "p99": 0.116,
+          "max": 0.116
+        },
+        "within_tolerance": true,
+        "has_geometry": true,
+        "has_turn_by_turn": true,
+        "truck_profile": true
+      },
+      "multi_waypoint": {
+        "success_rate_pct": 80.0,
+        "latency": {
+          "mean": 1061.28,
+          "stdev": 173.59,
+          "min": 754.2,
+          "p50": 1140.21,
+          "p90": 1159.6,
+          "p95": 1164.58,
+          "p99": 1168.56,
+          "max": 1169.55
+        },
+        "distance_miles_mean": 2398.8,
+        "relative_error_pct": {
+          "mean": 0.05,
+          "stdev": 0.0,
+          "p50": 0.05,
+          "p90": 0.05,
+          "p95": 0.05,
+          "p99": 0.05,
+          "max": 0.05
+        },
+        "within_tolerance": true,
+        "has_geometry": true,
+        "has_turn_by_turn": true,
+        "truck_profile": true
+      }
+    },
+    "OSRM (demo)": {
+      "short_midwest": {
+        "success_rate_pct": 100.0,
+        "latency": {
+          "mean": 986.65,
+          "stdev": 644.27,
+          "min": 675.16,
+          "p50": 699.34,
+          "p90": 1577.74,
+          "p95": 1858.07,
+          "p99": 2082.32,
+          "max": 2138.39
+        },
+        "distance_miles_mean": 180.7,
+        "relative_error_pct": {
+          "mean": 0.709,
+          "stdev": 0.0,
+          "p50": 0.709,
+          "p90": 0.709,
+          "p95": 0.709,
+          "p99": 0.709,
+          "max": 0.709
+        },
+        "within_tolerance": true,
+        "has_geometry": true,
+        "has_turn_by_turn": true,
+        "truck_profile": false
+      },
+      "medium_south": {
+        "success_rate_pct": 100.0,
+        "latency": {
+          "mean": 709.32,
+          "stdev": 31.86,
+          "min": 678.66,
+          "p50": 693.36,
+          "p90": 744.76,
+          "p95": 747.79,
+          "p99": 750.22,
+          "max": 750.82
+        },
+        "distance_miles_mean": 452.3,
+        "relative_error_pct": {
+          "mean": 3.758,
+          "stdev": 0.0,
+          "p50": 3.758,
+          "p90": 3.758,
+          "p95": 3.758,
+          "p99": 3.758,
+          "max": 3.758
+        },
+        "within_tolerance": true,
+        "has_geometry": true,
+        "has_turn_by_turn": true,
+        "truck_profile": false
+      },
+      "long_cross_country": {
+        "success_rate_pct": 100.0,
+        "latency": {
+          "mean": 1123.66,
+          "stdev": 76.41,
+          "min": 1064.57,
+          "p50": 1075.13,
+          "p90": 1209.13,
+          "p95": 1213.97,
+          "p99": 1217.85,
+          "max": 1218.82
+        },
+        "distance_miles_mean": 2018.1,
+        "relative_error_pct": {
+          "mean": 0.096,
+          "stdev": 0.0,
+          "p50": 0.096,
+          "p90": 0.096,
+          "p95": 0.096,
+          "p99": 0.096,
+          "max": 0.096
+        },
+        "within_tolerance": true,
+        "has_geometry": true,
+        "has_turn_by_turn": true,
+        "truck_profile": false
+      },
+      "very_long_coast_to_coast": {
+        "success_rate_pct": 100.0,
+        "latency": {
+          "mean": 1646.77,
+          "stdev": 704.58,
+          "min": 1197.05,
+          "p50": 1362.48,
+          "p90": 2324.15,
+          "p95": 2609.6,
+          "p99": 2837.95,
+          "max": 2895.04
+        },
+        "distance_miles_mean": 2798.4,
+        "relative_error_pct": {
+          "mean": 0.301,
+          "stdev": 0.0,
+          "p50": 0.301,
+          "p90": 0.301,
+          "p95": 0.301,
+          "p99": 0.301,
+          "max": 0.301
+        },
+        "within_tolerance": true,
+        "has_geometry": true,
+        "has_turn_by_turn": true,
+        "truck_profile": false
+      },
+      "multi_waypoint": {
+        "success_rate_pct": 100.0,
+        "latency": {
+          "mean": 1307.59,
+          "stdev": 287.08,
+          "min": 1120.24,
+          "p50": 1196.26,
+          "p90": 1596.88,
+          "p95": 1702.77,
+          "p99": 1787.49,
+          "max": 1808.67
+        },
+        "distance_miles_mean": 2404.8,
+        "relative_error_pct": {
+          "mean": 0.2,
+          "stdev": 0.0,
+          "p50": 0.2,
+          "p90": 0.2,
+          "p95": 0.2,
+          "p99": 0.2,
+          "max": 0.2
+        },
+        "within_tolerance": true,
+        "has_geometry": true,
+        "has_turn_by_turn": true,
+        "truck_profile": false
+      }
+    }
+  }
+}
