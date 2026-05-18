@@ -14,7 +14,7 @@ from apps.trips.serializers import (
     TripSummarySerializer,
 )
 from apps.trips.services.geocoding import make_geocoder
-from apps.trips.services.trip_planner import plan
+from apps.trips.services.trip_planner import TripPlan, plan
 
 logger = logging.getLogger("app")
 
@@ -42,6 +42,20 @@ def plan_trip(request: Request) -> Response:
         logger.warning("Routing failed", extra={"error": str(exc)})
         return Response({"detail": str(exc)}, status=status.HTTP_502_BAD_GATEWAY)
 
+    trip = _save_trip(data, trip_plan)
+
+    if trip_plan.route.used_fallback:
+        logger.warning(
+            "Trip planned with OSRM fallback — truck restrictions not applied",
+            extra={"trip_id": str(trip.pk)},
+        )
+
+    return Response(
+        TripPlanResponseSerializer(trip).data, status=status.HTTP_201_CREATED
+    )
+
+
+def _save_trip(data: dict, trip_plan: TripPlan) -> Trip:
     with transaction.atomic():
         trip_request = TripRequest.objects.create(
             current_location=data["current_location"],
@@ -103,19 +117,10 @@ def plan_trip(request: Request) -> Response:
             ]
         )
 
-    if trip_plan.route.used_fallback:
-        logger.warning(
-            "Trip planned with OSRM fallback — truck restrictions not applied",
-            extra={"trip_id": str(trip.pk)},
-        )
-
-    trip_out = (
+    return (
         Trip.objects.select_related("request", "route")
         .prefetch_related("events", "day_logs")
         .get(pk=trip.pk)
-    )
-    return Response(
-        TripPlanResponseSerializer(trip_out).data, status=status.HTTP_201_CREATED
     )
 
 
