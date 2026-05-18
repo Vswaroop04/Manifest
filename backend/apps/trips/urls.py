@@ -1,3 +1,10 @@
 from django.urls import path
 
-urlpatterns: list = []
+from apps.trips import views
+
+urlpatterns = [
+    path("trips/plan/", views.plan_trip, name="trip-plan"),
+    path("trips/", views.trip_list, name="trip-list"),
+    path("trips/<uuid:trip_id>/", views.trip_detail, name="trip-detail"),
+    path("geocode/", views.geocode_suggest, name="geocode-suggest"),
+]
