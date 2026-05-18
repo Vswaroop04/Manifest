@@ -41,7 +41,9 @@ def _geocode_all(
     }
 
     with ThreadPoolExecutor(max_workers=3) as executor:
-        futures = {executor.submit(geocoder.geocode, q): key for key, q in queries.items()}
+        futures = {
+            executor.submit(geocoder.geocode, q): key for key, q in queries.items()
+        }
         for future in as_completed(futures):
             key = futures[future]
             coords = future.result()
@@ -130,34 +132,45 @@ def plan_trip(request: Request) -> Response:
             used_fallback=route_result.used_fallback,
         )
 
-        TripEvent.objects.bulk_create([
-            TripEvent(
-                trip=trip,
-                event_type=ev.event_type,
-                start_time=ev.start_time,
-                end_time=ev.end_time,
-                location_label=ev.location_label,
-                coords=list(ev.coords) if ev.coords else None,
-                mile_marker=ev.mile_marker,
-                metadata=ev.metadata,
-            )
-            for ev in events
-        ])
+        TripEvent.objects.bulk_create(
+            [
+                TripEvent(
+                    trip=trip,
+                    event_type=ev.event_type,
+                    start_time=ev.start_time,
+                    end_time=ev.end_time,
+                    location_label=ev.location_label,
+                    coords=list(ev.coords) if ev.coords else None,
+                    mile_marker=ev.mile_marker,
+                    metadata=ev.metadata,
+                )
+                for ev in events
+            ]
+        )
 
-        DayLog.objects.bulk_create([
-            DayLog(
-                trip=trip,
-                day_number=dl.day_number,
-                date=dl.date,
-                segments=[{"status": s.status, "start_min": s.start_min, "end_min": s.end_min} for s in dl.segments],
-                total_driving=dl.total_driving,
-                total_on_duty_nd=dl.total_on_duty_nd,
-                total_off_duty=dl.total_off_duty,
-                total_sleeper=dl.total_sleeper,
-                recap_70hr=dl.recap_70hr,
-            )
-            for dl in day_logs
-        ])
+        DayLog.objects.bulk_create(
+            [
+                DayLog(
+                    trip=trip,
+                    day_number=dl.day_number,
+                    date=dl.date,
+                    segments=[
+                        {
+                            "status": s.status,
+                            "start_min": s.start_min,
+                            "end_min": s.end_min,
+                        }
+                        for s in dl.segments
+                    ],
+                    total_driving=dl.total_driving,
+                    total_on_duty_nd=dl.total_on_duty_nd,
+                    total_off_duty=dl.total_off_duty,
+                    total_sleeper=dl.total_sleeper,
+                    recap_70hr=dl.recap_70hr,
+                )
+                for dl in day_logs
+            ]
+        )
 
     trip_out = (
         Trip.objects.select_related("request", "route")
@@ -171,14 +184,18 @@ def plan_trip(request: Request) -> Response:
             extra={"trip_id": str(trip.pk)},
         )
 
-    return Response(TripPlanResponseSerializer(trip_out).data, status=status.HTTP_201_CREATED)
+    return Response(
+        TripPlanResponseSerializer(trip_out).data, status=status.HTTP_201_CREATED
+    )
 
 
 @api_view(["GET"])
 def geocode_suggest(request: Request) -> Response:
     query = request.query_params.get("q", "").strip()
     if not query:
-        return Response({"detail": "q parameter required."}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {"detail": "q parameter required."}, status=status.HTTP_400_BAD_REQUEST
+        )
 
     suggestions = make_geocoder().suggest(query)
     return Response(suggestions)

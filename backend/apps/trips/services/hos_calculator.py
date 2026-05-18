@@ -18,6 +18,7 @@ from apps.trips.constants import (
 
 logger = logging.getLogger("app")
 
+
 @dataclass
 class Waypoint:
     label: str
@@ -73,57 +74,65 @@ def _append_stop(
 ) -> None:
     if stop_kind == "fuel":
         duration = _FUEL_DURATION
-        events.append(TripEventData(
-            event_type="fuel",
-            start_time=state.current_time,
-            end_time=state.current_time + duration,
-            location_label="Fuel Stop",
-            coords=None,
-            mile_marker=state.current_mile,
-            metadata={"trigger": "1000mi_rule"},
-        ))
+        events.append(
+            TripEventData(
+                event_type="fuel",
+                start_time=state.current_time,
+                end_time=state.current_time + duration,
+                location_label="Fuel Stop",
+                coords=None,
+                mile_marker=state.current_mile,
+                metadata={"trigger": "1000mi_rule"},
+            )
+        )
         state.current_time += duration
         state.cycle_hrs += _td_to_dec_hrs(duration)
     else:
         assert waypoint is not None
         duration = _STOP_DURATION
-        events.append(TripEventData(
-            event_type=waypoint.event_type,
-            start_time=state.current_time,
-            end_time=state.current_time + duration,
-            location_label=waypoint.label,
-            coords=waypoint.coords,
-            mile_marker=state.current_mile,
-            metadata={},
-        ))
+        events.append(
+            TripEventData(
+                event_type=waypoint.event_type,
+                start_time=state.current_time,
+                end_time=state.current_time + duration,
+                location_label=waypoint.label,
+                coords=waypoint.coords,
+                mile_marker=state.current_mile,
+                metadata={},
+            )
+        )
         state.current_time += duration
         state.cycle_hrs += _td_to_dec_hrs(duration)
 
 
 def _append_break(events: list[TripEventData], state: _State) -> None:
-    events.append(TripEventData(
-        event_type="break",
-        start_time=state.current_time,
-        end_time=state.current_time + _BREAK_DURATION,
-        location_label="",
-        coords=None,
-        mile_marker=state.current_mile,
-        metadata={"trigger": "8hr_rule"},
-    ))
+    events.append(
+        TripEventData(
+            event_type="break",
+            start_time=state.current_time,
+            end_time=state.current_time + _BREAK_DURATION,
+            location_label="",
+            coords=None,
+            mile_marker=state.current_mile,
+            metadata={"trigger": "8hr_rule"},
+        )
+    )
     state.current_time += _BREAK_DURATION
     state.drive_for_break = timedelta()
 
 
 def _append_rest(events: list[TripEventData], state: _State, trigger: str) -> None:
-    events.append(TripEventData(
-        event_type="rest",
-        start_time=state.current_time,
-        end_time=state.current_time + _REST_DURATION,
-        location_label="",
-        coords=None,
-        mile_marker=state.current_mile,
-        metadata={"trigger": trigger},
-    ))
+    events.append(
+        TripEventData(
+            event_type="rest",
+            start_time=state.current_time,
+            end_time=state.current_time + _REST_DURATION,
+            location_label="",
+            coords=None,
+            mile_marker=state.current_mile,
+            metadata={"trigger": trigger},
+        )
+    )
     state.current_time += _REST_DURATION
     state.shift_start = state.current_time
     state.drive_in_shift = timedelta()
@@ -138,14 +147,16 @@ def _append_drive_end(
     drive_time: timedelta,
     miles: Decimal,
 ) -> None:
-    events.append(TripEventData(
-        event_type="drive_end",
-        start_time=state.current_time + drive_time,
-        end_time=state.current_time + drive_time,
-        location_label="",
-        coords=None,
-        mile_marker=state.current_mile + miles,
-    ))
+    events.append(
+        TripEventData(
+            event_type="drive_end",
+            start_time=state.current_time + drive_time,
+            end_time=state.current_time + drive_time,
+            location_label="",
+            coords=None,
+            mile_marker=state.current_mile + miles,
+        )
+    )
     state.current_time += drive_time
     state.drive_in_shift += drive_time
     state.drive_for_break += drive_time
@@ -189,24 +200,28 @@ def calculate(
     # Off-duty from midnight to departure if driver doesn't start at midnight
     midnight = _day_start(departure_time)
     if departure_time > midnight:
-        events.append(TripEventData(
-            event_type="off_duty",
-            start_time=midnight,
-            end_time=departure_time,
+        events.append(
+            TripEventData(
+                event_type="off_duty",
+                start_time=midnight,
+                end_time=departure_time,
+                location_label="",
+                coords=None,
+                mile_marker=Decimal("0"),
+                metadata={"trigger": "pre_departure"},
+            )
+        )
+
+    events.append(
+        TripEventData(
+            event_type="drive_start",
+            start_time=state.current_time,
+            end_time=None,
             location_label="",
             coords=None,
-            mile_marker=Decimal("0"),
-            metadata={"trigger": "pre_departure"},
-        ))
-
-    events.append(TripEventData(
-        event_type="drive_start",
-        start_time=state.current_time,
-        end_time=None,
-        location_label="",
-        coords=None,
-        mile_marker=state.current_mile,
-    ))
+            mile_marker=state.current_mile,
+        )
+    )
 
     while state.current_mile < total_miles:
         remaining = total_miles - state.current_mile
@@ -223,10 +238,14 @@ def calculate(
         max_by_break = _td_to_dec_hrs(break_avail) * avg_speed
         max_by_cycle = cycle_avail_hrs * avg_speed
 
-        max_drive_miles = min(max_by_drive, max_by_window, max_by_break, max_by_cycle, remaining)
+        max_drive_miles = min(
+            max_by_drive, max_by_window, max_by_break, max_by_cycle, remaining
+        )
 
         # Skip stops already passed
-        while stop_idx < len(mandatory) and mandatory[stop_idx][0] <= state.current_mile:
+        while (
+            stop_idx < len(mandatory) and mandatory[stop_idx][0] <= state.current_mile
+        ):
             stop_idx += 1
 
         # Check if next stop falls within driveable range
@@ -251,14 +270,16 @@ def calculate(
             _append_stop(events, state, stop_kind, waypoint)
 
             if state.current_mile < total_miles:
-                events.append(TripEventData(
-                    event_type="drive_start",
-                    start_time=state.current_time,
-                    end_time=None,
-                    location_label="",
-                    coords=None,
-                    mile_marker=state.current_mile,
-                ))
+                events.append(
+                    TripEventData(
+                        event_type="drive_start",
+                        start_time=state.current_time,
+                        end_time=None,
+                        location_label="",
+                        coords=None,
+                        mile_marker=state.current_mile,
+                    )
+                )
         else:
             # A HOS rule fires — drive to the limit then stop
             drive_time = timedelta(hours=float(max_drive_miles / avg_speed))
@@ -269,7 +290,11 @@ def calculate(
 
             window_elapsed = state.current_time - state.shift_start
 
-            if state.drive_for_break >= _BREAK_TRIGGER and state.drive_in_shift < _DRIVE_LIMIT and window_elapsed < _WINDOW_LIMIT:
+            if (
+                state.drive_for_break >= _BREAK_TRIGGER
+                and state.drive_in_shift < _DRIVE_LIMIT
+                and window_elapsed < _WINDOW_LIMIT
+            ):
                 _append_break(events, state)
             elif state.drive_in_shift >= _DRIVE_LIMIT:
                 _append_rest(events, state, "11hr_limit")
@@ -280,27 +305,31 @@ def calculate(
                 _append_rest(events, state, "70hr_cycle")
 
             if state.current_mile < total_miles:
-                events.append(TripEventData(
-                    event_type="drive_start",
-                    start_time=state.current_time,
-                    end_time=None,
-                    location_label="",
-                    coords=None,
-                    mile_marker=state.current_mile,
-                ))
+                events.append(
+                    TripEventData(
+                        event_type="drive_start",
+                        start_time=state.current_time,
+                        end_time=None,
+                        location_label="",
+                        coords=None,
+                        mile_marker=state.current_mile,
+                    )
+                )
 
     # Off-duty from arrival to midnight if trip ends before end of day
     arrival_time = state.current_time
     eod = _day_end(arrival_time)
     if arrival_time < eod:
-        events.append(TripEventData(
-            event_type="off_duty",
-            start_time=arrival_time,
-            end_time=eod,
-            location_label="",
-            coords=None,
-            mile_marker=total_miles,
-            metadata={"trigger": "post_arrival"},
-        ))
+        events.append(
+            TripEventData(
+                event_type="off_duty",
+                start_time=arrival_time,
+                end_time=eod,
+                location_label="",
+                coords=None,
+                mile_marker=total_miles,
+                metadata={"trigger": "post_arrival"},
+            )
+        )
 
     return events

@@ -14,7 +14,9 @@ DEBUG = IS_DEVELOPMENT
 
 SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-key-change-in-production")
 
-ALLOWED_HOSTS: list[str] = os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
+ALLOWED_HOSTS: list[str] = os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1").split(
+    ","
+)
 
 DJANGO_APPS = [
     "django.contrib.contenttypes",
@@ -57,7 +59,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "config.wsgi.application"
 
-_db_url = os.environ.get("DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/manifest_dev")
+_db_url = os.environ.get(
+    "DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/manifest_dev"
+)
 DATABASES = {
     "default": dj_database_url.parse(_db_url, conn_max_age=600),
 }
@@ -104,8 +108,12 @@ ORS_API_KEY = os.environ.get("ORS_API_KEY", "")
 
 # External service URLs — override in settings if self-hosting
 PHOTON_URL = os.environ.get("PHOTON_URL", "https://photon.komoot.io/api/")
-NOMINATIM_URL = os.environ.get("NOMINATIM_URL", "https://nominatim.openstreetmap.org/search")
-ORS_URL = os.environ.get("ORS_URL", "https://api.openrouteservice.org/v2/directions/driving-hgv")
+NOMINATIM_URL = os.environ.get(
+    "NOMINATIM_URL", "https://nominatim.openstreetmap.org/search"
+)
+ORS_URL = os.environ.get(
+    "ORS_URL", "https://api.openrouteservice.org/v2/directions/driving-hgv"
+)
 OSRM_URL = os.environ.get("OSRM_URL", "http://router.project-osrm.org/route/v1/driving")
 
 LOGGING = {

@@ -8,108 +8,278 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Trip',
+            name="Trip",
             fields=[
-                ('created', model_utils.fields.AutoCreatedField(default=django.utils.timezone.now, editable=False, verbose_name='created')),
-                ('modified', model_utils.fields.AutoLastModifiedField(default=django.utils.timezone.now, editable=False, verbose_name='modified')),
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('status', models.CharField(choices=[('pending', 'Pending'), ('processing', 'Processing'), ('completed', 'Completed'), ('failed', 'Failed')], default='pending', max_length=20)),
-                ('current_coords', models.JSONField(blank=True, null=True)),
-                ('pickup_coords', models.JSONField(blank=True, null=True)),
-                ('dropoff_coords', models.JSONField(blank=True, null=True)),
+                (
+                    "created",
+                    model_utils.fields.AutoCreatedField(
+                        default=django.utils.timezone.now,
+                        editable=False,
+                        verbose_name="created",
+                    ),
+                ),
+                (
+                    "modified",
+                    model_utils.fields.AutoLastModifiedField(
+                        default=django.utils.timezone.now,
+                        editable=False,
+                        verbose_name="modified",
+                    ),
+                ),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("pending", "Pending"),
+                            ("processing", "Processing"),
+                            ("completed", "Completed"),
+                            ("failed", "Failed"),
+                        ],
+                        default="pending",
+                        max_length=20,
+                    ),
+                ),
+                ("current_coords", models.JSONField(blank=True, null=True)),
+                ("pickup_coords", models.JSONField(blank=True, null=True)),
+                ("dropoff_coords", models.JSONField(blank=True, null=True)),
             ],
             options={
-                'ordering': ['-created'],
+                "ordering": ["-created"],
             },
         ),
         migrations.CreateModel(
-            name='TripRequest',
+            name="TripRequest",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created', model_utils.fields.AutoCreatedField(default=django.utils.timezone.now, editable=False, verbose_name='created')),
-                ('modified', model_utils.fields.AutoLastModifiedField(default=django.utils.timezone.now, editable=False, verbose_name='modified')),
-                ('current_location', models.CharField(max_length=500)),
-                ('pickup_location', models.CharField(max_length=500)),
-                ('dropoff_location', models.CharField(max_length=500)),
-                ('cycle_hours_used', models.DecimalField(decimal_places=2, max_digits=5)),
-                ('departure_time', models.DateTimeField()),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "created",
+                    model_utils.fields.AutoCreatedField(
+                        default=django.utils.timezone.now,
+                        editable=False,
+                        verbose_name="created",
+                    ),
+                ),
+                (
+                    "modified",
+                    model_utils.fields.AutoLastModifiedField(
+                        default=django.utils.timezone.now,
+                        editable=False,
+                        verbose_name="modified",
+                    ),
+                ),
+                ("current_location", models.CharField(max_length=500)),
+                ("pickup_location", models.CharField(max_length=500)),
+                ("dropoff_location", models.CharField(max_length=500)),
+                (
+                    "cycle_hours_used",
+                    models.DecimalField(decimal_places=2, max_digits=5),
+                ),
+                ("departure_time", models.DateTimeField()),
             ],
             options={
-                'ordering': ['-created'],
+                "ordering": ["-created"],
             },
         ),
         migrations.CreateModel(
-            name='Route',
+            name="Route",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created', model_utils.fields.AutoCreatedField(default=django.utils.timezone.now, editable=False, verbose_name='created')),
-                ('modified', model_utils.fields.AutoLastModifiedField(default=django.utils.timezone.now, editable=False, verbose_name='modified')),
-                ('geometry', models.JSONField()),
-                ('total_miles', models.DecimalField(decimal_places=1, max_digits=8)),
-                ('total_drive_secs', models.IntegerField()),
-                ('used_fallback', models.BooleanField(default=False)),
-                ('trip', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='route', to='trips.trip')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "created",
+                    model_utils.fields.AutoCreatedField(
+                        default=django.utils.timezone.now,
+                        editable=False,
+                        verbose_name="created",
+                    ),
+                ),
+                (
+                    "modified",
+                    model_utils.fields.AutoLastModifiedField(
+                        default=django.utils.timezone.now,
+                        editable=False,
+                        verbose_name="modified",
+                    ),
+                ),
+                ("geometry", models.JSONField()),
+                ("total_miles", models.DecimalField(decimal_places=1, max_digits=8)),
+                ("total_drive_secs", models.IntegerField()),
+                ("used_fallback", models.BooleanField(default=False)),
+                (
+                    "trip",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="route",
+                        to="trips.trip",
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.AddField(
-            model_name='trip',
-            name='request',
-            field=models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='trip', to='trips.triprequest'),
+            model_name="trip",
+            name="request",
+            field=models.OneToOneField(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="trip",
+                to="trips.triprequest",
+            ),
         ),
         migrations.CreateModel(
-            name='DayLog',
+            name="DayLog",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created', model_utils.fields.AutoCreatedField(default=django.utils.timezone.now, editable=False, verbose_name='created')),
-                ('modified', model_utils.fields.AutoLastModifiedField(default=django.utils.timezone.now, editable=False, verbose_name='modified')),
-                ('day_number', models.PositiveSmallIntegerField()),
-                ('date', models.DateField()),
-                ('segments', models.JSONField()),
-                ('total_driving', models.DecimalField(decimal_places=2, max_digits=5)),
-                ('total_on_duty_nd', models.DecimalField(decimal_places=2, max_digits=5)),
-                ('total_off_duty', models.DecimalField(decimal_places=2, max_digits=5)),
-                ('total_sleeper', models.DecimalField(decimal_places=2, max_digits=5)),
-                ('recap_70hr', models.DecimalField(decimal_places=2, max_digits=5)),
-                ('trip', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='day_logs', to='trips.trip')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "created",
+                    model_utils.fields.AutoCreatedField(
+                        default=django.utils.timezone.now,
+                        editable=False,
+                        verbose_name="created",
+                    ),
+                ),
+                (
+                    "modified",
+                    model_utils.fields.AutoLastModifiedField(
+                        default=django.utils.timezone.now,
+                        editable=False,
+                        verbose_name="modified",
+                    ),
+                ),
+                ("day_number", models.PositiveSmallIntegerField()),
+                ("date", models.DateField()),
+                ("segments", models.JSONField()),
+                ("total_driving", models.DecimalField(decimal_places=2, max_digits=5)),
+                (
+                    "total_on_duty_nd",
+                    models.DecimalField(decimal_places=2, max_digits=5),
+                ),
+                ("total_off_duty", models.DecimalField(decimal_places=2, max_digits=5)),
+                ("total_sleeper", models.DecimalField(decimal_places=2, max_digits=5)),
+                ("recap_70hr", models.DecimalField(decimal_places=2, max_digits=5)),
+                (
+                    "trip",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="day_logs",
+                        to="trips.trip",
+                    ),
+                ),
             ],
             options={
-                'ordering': ['day_number'],
-                'unique_together': {('trip', 'day_number')},
+                "ordering": ["day_number"],
+                "unique_together": {("trip", "day_number")},
             },
         ),
         migrations.CreateModel(
-            name='TripEvent',
+            name="TripEvent",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created', model_utils.fields.AutoCreatedField(default=django.utils.timezone.now, editable=False, verbose_name='created')),
-                ('modified', model_utils.fields.AutoLastModifiedField(default=django.utils.timezone.now, editable=False, verbose_name='modified')),
-                ('event_type', models.CharField(choices=[('drive_start', 'Drive Start'), ('drive_end', 'Drive End'), ('break', 'Break'), ('fuel', 'Fuel Stop'), ('pickup', 'Pickup'), ('dropoff', 'Dropoff'), ('rest', 'Rest')], max_length=20)),
-                ('start_time', models.DateTimeField()),
-                ('end_time', models.DateTimeField(blank=True, null=True)),
-                ('location_label', models.CharField(blank=True, max_length=500)),
-                ('coords', models.JSONField(blank=True, null=True)),
-                ('mile_marker', models.DecimalField(decimal_places=1, max_digits=8)),
-                ('metadata', models.JSONField(default=dict)),
-                ('trip', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='events', to='trips.trip')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "created",
+                    model_utils.fields.AutoCreatedField(
+                        default=django.utils.timezone.now,
+                        editable=False,
+                        verbose_name="created",
+                    ),
+                ),
+                (
+                    "modified",
+                    model_utils.fields.AutoLastModifiedField(
+                        default=django.utils.timezone.now,
+                        editable=False,
+                        verbose_name="modified",
+                    ),
+                ),
+                (
+                    "event_type",
+                    models.CharField(
+                        choices=[
+                            ("drive_start", "Drive Start"),
+                            ("drive_end", "Drive End"),
+                            ("break", "Break"),
+                            ("fuel", "Fuel Stop"),
+                            ("pickup", "Pickup"),
+                            ("dropoff", "Dropoff"),
+                            ("rest", "Rest"),
+                        ],
+                        max_length=20,
+                    ),
+                ),
+                ("start_time", models.DateTimeField()),
+                ("end_time", models.DateTimeField(blank=True, null=True)),
+                ("location_label", models.CharField(blank=True, max_length=500)),
+                ("coords", models.JSONField(blank=True, null=True)),
+                ("mile_marker", models.DecimalField(decimal_places=1, max_digits=8)),
+                ("metadata", models.JSONField(default=dict)),
+                (
+                    "trip",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="events",
+                        to="trips.trip",
+                    ),
+                ),
             ],
             options={
-                'ordering': ['start_time'],
-                'indexes': [models.Index(fields=['trip', 'start_time'], name='trips_tripe_trip_id_f07920_idx')],
+                "ordering": ["start_time"],
+                "indexes": [
+                    models.Index(
+                        fields=["trip", "start_time"],
+                        name="trips_tripe_trip_id_f07920_idx",
+                    )
+                ],
             },
         ),
         migrations.AddIndex(
-            model_name='trip',
-            index=models.Index(fields=['status'], name='trips_trip_status_259ca6_idx'),
+            model_name="trip",
+            index=models.Index(fields=["status"], name="trips_trip_status_259ca6_idx"),
         ),
     ]

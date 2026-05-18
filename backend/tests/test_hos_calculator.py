@@ -20,6 +20,7 @@ def events_of(events, kind):
 # Simple short trip — no HOS limits hit
 # ---------------------------------------------------------------------------
 
+
 def test_short_trip_no_limits_hit():
     # Chicago → Indianapolis: 182 miles, ~3.3 hrs driving
     events = calculate(
@@ -41,6 +42,7 @@ def test_short_trip_no_limits_hit():
 # ---------------------------------------------------------------------------
 # 30-minute break triggered after 8 hours of driving
 # ---------------------------------------------------------------------------
+
 
 def test_break_triggered_after_8hrs_driving():
     # 550 miles at 55 mph = 10 hrs — break fires at 8hr mark (440 miles)
@@ -75,6 +77,7 @@ def test_break_resets_8hr_clock_not_11hr_clock():
 # 11-hour driving limit triggers rest
 # ---------------------------------------------------------------------------
 
+
 def test_11hr_drive_limit_triggers_rest():
     # 660 miles at 60 mph = 11 hrs — rest fires exactly at 11hr
     events = calculate(
@@ -93,6 +96,7 @@ def test_11hr_drive_limit_triggers_rest():
 # ---------------------------------------------------------------------------
 # 14-hour window triggers rest before 11hr driving limit
 # ---------------------------------------------------------------------------
+
 
 def test_14hr_window_triggers_rest():
     # Driver has a 3hr pickup stop early → uses window time without driving
@@ -117,6 +121,7 @@ def test_14hr_window_triggers_rest():
 # ---------------------------------------------------------------------------
 # Multi-day trip: rest resets all clocks
 # ---------------------------------------------------------------------------
+
 
 def test_multi_day_trip_has_rest_between_days():
     # 2000 miles at 55 mph = ~36 hrs driving — needs multiple rests
@@ -151,6 +156,7 @@ def test_rest_duration_is_10_hours():
 # Fuel stop every 1000 miles
 # ---------------------------------------------------------------------------
 
+
 def test_fuel_stop_at_1000_miles():
     events = calculate(
         departure_time=START,
@@ -184,6 +190,7 @@ def test_two_fuel_stops_at_1000_and_2000_miles():
 # Driver near 70hr cycle limit
 # ---------------------------------------------------------------------------
 
+
 def test_driver_with_high_cycle_hours_gets_rest_sooner():
     # 60 hrs used — only 10 hrs of on-duty time left before hitting 70hr cycle
     events_low = calculate(
@@ -208,6 +215,7 @@ def test_driver_with_high_cycle_hours_gets_rest_sooner():
 # ---------------------------------------------------------------------------
 # Pickup and dropoff durations
 # ---------------------------------------------------------------------------
+
 
 def test_pickup_stop_is_1_hour():
     events = calculate(

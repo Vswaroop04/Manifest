@@ -65,7 +65,7 @@ def test_on_duty_nd_includes_pickup_and_dropoff():
             Waypoint("Dropoff", Decimal("200"), "dropoff"),
         ],
     )
-    total_on_duty_nd = sum(l.total_on_duty_nd for l in logs)
+    total_on_duty_nd = sum(log.total_on_duty_nd for log in logs)
     assert total_on_duty_nd == Decimal("2.00")
 
 
@@ -117,7 +117,9 @@ def test_each_day_covers_full_24_hours():
     )
     for log in logs:
         total_mins = sum(s.end_min - s.start_min for s in log.segments)
-        assert total_mins == 1440, f"Day {log.day_number} has {total_mins} mins, expected 1440"
+        assert (
+            total_mins == 1440
+        ), f"Day {log.day_number} has {total_mins} mins, expected 1440"
 
 
 def test_pre_departure_period_is_off_duty():

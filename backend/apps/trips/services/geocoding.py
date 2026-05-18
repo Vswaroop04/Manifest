@@ -16,8 +16,7 @@ class Geocoder(ABC):
     name: str
 
     @abstractmethod
-    def geocode(self, query: str) -> Optional[tuple[float, float]]:
-        ...
+    def geocode(self, query: str) -> Optional[tuple[float, float]]: ...
 
 
 class PhotonGeocoder(Geocoder):
@@ -38,7 +37,9 @@ class PhotonGeocoder(Geocoder):
             coords = features[0]["geometry"]["coordinates"]
             return float(coords[1]), float(coords[0])
         except Exception as exc:
-            logger.warning("Photon geocoding failed", extra={"query": query, "error": str(exc)})
+            logger.warning(
+                "Photon geocoding failed", extra={"query": query, "error": str(exc)}
+            )
             return None
 
 
@@ -59,7 +60,9 @@ class NominatimGeocoder(Geocoder):
                 return None
             return float(results[0]["lat"]), float(results[0]["lon"])
         except Exception as exc:
-            logger.warning("Nominatim geocoding failed", extra={"query": query, "error": str(exc)})
+            logger.warning(
+                "Nominatim geocoding failed", extra={"query": query, "error": str(exc)}
+            )
             return None
 
 
@@ -83,7 +86,11 @@ class MultiServiceGeocoder(Geocoder):
             return result
         logger.warning(
             "Primary geocoder failed, falling back",
-            extra={"query": query, "primary": self.primary.name, "fallback": self.fallback.name},
+            extra={
+                "query": query,
+                "primary": self.primary.name,
+                "fallback": self.fallback.name,
+            },
         )
         result = self.fallback.geocode(query)
         if result is None:
@@ -104,9 +111,16 @@ class MultiServiceGeocoder(Geocoder):
             for f in features:
                 props = f.get("properties", {})
                 coords = f["geometry"]["coordinates"]
-                parts = [props.get("name"), props.get("city"), props.get("state"), props.get("country")]
+                parts = [
+                    props.get("name"),
+                    props.get("city"),
+                    props.get("state"),
+                    props.get("country"),
+                ]
                 label = ", ".join(p for p in parts if p)
-                suggestions.append({"label": label, "lat": float(coords[1]), "lng": float(coords[0])})
+                suggestions.append(
+                    {"label": label, "lat": float(coords[1]), "lng": float(coords[0])}
+                )
             return suggestions
         except Exception as exc:
             logger.warning("Suggest failed", extra={"query": query, "error": str(exc)})

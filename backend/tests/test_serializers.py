@@ -61,13 +61,16 @@ def test_future_departure_time_accepted():
     assert s.is_valid(), s.errors
 
 
-@pytest.mark.parametrize("missing_field", [
-    "current_location",
-    "pickup_location",
-    "dropoff_location",
-    "cycle_hours_used",
-    "departure_time",
-])
+@pytest.mark.parametrize(
+    "missing_field",
+    [
+        "current_location",
+        "pickup_location",
+        "dropoff_location",
+        "cycle_hours_used",
+        "departure_time",
+    ],
+)
 def test_missing_required_field_rejected(missing_field):
     payload = valid_payload()
     del payload[missing_field]

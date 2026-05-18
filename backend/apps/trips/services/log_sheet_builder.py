@@ -113,15 +113,17 @@ def build(events: list[TripEventData]) -> list[DayLogData]:
 
         running_on_duty += (driving + on_duty_nd).quantize(Decimal("0.01"))
 
-        result.append(DayLogData(
-            day_number=day_num,
-            date=day_date,
-            segments=segments,
-            total_driving=driving.quantize(Decimal("0.01")),
-            total_on_duty_nd=on_duty_nd.quantize(Decimal("0.01")),
-            total_off_duty=off_duty.quantize(Decimal("0.01")),
-            total_sleeper=sleeper.quantize(Decimal("0.01")),
-            recap_70hr=running_on_duty.quantize(Decimal("0.01")),
-        ))
+        result.append(
+            DayLogData(
+                day_number=day_num,
+                date=day_date,
+                segments=segments,
+                total_driving=driving.quantize(Decimal("0.01")),
+                total_on_duty_nd=on_duty_nd.quantize(Decimal("0.01")),
+                total_off_duty=off_duty.quantize(Decimal("0.01")),
+                total_sleeper=sleeper.quantize(Decimal("0.01")),
+                recap_70hr=running_on_duty.quantize(Decimal("0.01")),
+            )
+        )
 
     return result

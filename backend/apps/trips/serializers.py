@@ -10,11 +10,14 @@ class TripPlanRequestSerializer(serializers.Serializer):
     current_location = serializers.CharField(max_length=500)
     pickup_location = serializers.CharField(max_length=500)
     dropoff_location = serializers.CharField(max_length=500)
-    cycle_hours_used = serializers.DecimalField(max_digits=5, decimal_places=2, min_value=Decimal("0"), max_value=Decimal("70"))
+    cycle_hours_used = serializers.DecimalField(
+        max_digits=5, decimal_places=2, min_value=Decimal("0"), max_value=Decimal("70")
+    )
     departure_time = serializers.DateTimeField()
 
     def validate_departure_time(self, value: datetime) -> datetime:
         from django.utils import timezone
+
         if value < timezone.now():
             raise serializers.ValidationError("Departure time must be in the future.")
         return value

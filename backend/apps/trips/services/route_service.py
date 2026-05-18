@@ -55,7 +55,9 @@ def _ors_route(waypoints: list[tuple[float, float]]) -> RouteResult:
     data = resp.json()
     route = data["routes"][0]
     summary = route["summary"]
-    total_miles = (Decimal(str(summary["distance"])) / METERS_PER_MILE).quantize(Decimal("0.1"))
+    total_miles = (Decimal(str(summary["distance"])) / METERS_PER_MILE).quantize(
+        Decimal("0.1")
+    )
     geometry = [[lat, lng] for lat, lng in polyline.decode(route["geometry"])]
 
     return RouteResult(
@@ -85,7 +87,9 @@ def _osrm_route(waypoints: list[tuple[float, float]]) -> RouteResult:
         raise RoutingError(f"OSRM returned code: {data.get('code')}")
 
     route = data["routes"][0]
-    total_miles = (Decimal(str(route["distance"])) / METERS_PER_MILE).quantize(Decimal("0.1"))
+    total_miles = (Decimal(str(route["distance"])) / METERS_PER_MILE).quantize(
+        Decimal("0.1")
+    )
     geometry = [[lat, lng] for lat, lng in polyline.decode(route["geometry"])]
 
     return RouteResult(

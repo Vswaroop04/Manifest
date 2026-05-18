@@ -37,8 +37,12 @@ class TripRequest(TimeStampedModel):
 
 class Trip(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid_utils.uuid7, editable=False)
-    request = models.OneToOneField(TripRequest, on_delete=models.CASCADE, related_name="trip")
-    status = models.CharField(max_length=20, choices=TripStatus.choices, default=TripStatus.PENDING)
+    request = models.OneToOneField(
+        TripRequest, on_delete=models.CASCADE, related_name="trip"
+    )
+    status = models.CharField(
+        max_length=20, choices=TripStatus.choices, default=TripStatus.PENDING
+    )
 
     current_coords = models.JSONField(null=True, blank=True)
     pickup_coords = models.JSONField(null=True, blank=True)
