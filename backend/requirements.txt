@@ -1,0 +1,29 @@
+# Core
+Django==5.1.4
+djangorestframework==3.15.2
+drf-spectacular==0.27.2
+django-model-utils==5.0.0
+django-cors-headers==4.6.0
+dj-database-url==2.3.0
+
+# Database & Cache
+psycopg2-binary==2.9.10
+redis==5.2.1
+django-redis==5.4.0
+
+# HTTP
+requests==2.32.3
+polyline==2.0.2
+
+# Config
+python-dotenv==1.0.1
+
+# Server
+gunicorn==23.0.0
+
+# Dev / Quality
+ruff==0.8.6
+pyright==1.1.391
+pytest==8.3.4
+pytest-django==4.9.0
+factory-boy==3.3.1
