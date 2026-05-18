@@ -128,6 +128,8 @@ def _append_rest(events: list[TripEventData], state: _State, trigger: str) -> No
     state.shift_start = state.current_time
     state.drive_in_shift = timedelta()
     state.drive_for_break = timedelta()
+    if trigger == "70hr_cycle":
+        state.cycle_hrs = Decimal("0")
 
 
 def _append_drive_end(
