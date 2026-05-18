@@ -34,7 +34,7 @@ function defaultDeparture(): string {
 function FieldLabel({ children, accent }: { children: React.ReactNode; accent?: string }) {
   return (
     <p
-      className="text-[11px] font-semibold uppercase tracking-[0.08em] mb-1"
+      className="text-[10px] font-semibold uppercase tracking-[0.1em] mb-1.5"
       style={{ color: accent ?? "var(--text-secondary)" }}
     >
       {children}
@@ -78,11 +78,11 @@ export function TripForm({ onSubmit, isPending }: TripFormProps) {
       {/* Route fields */}
       <div
         className="rounded-xl border overflow-hidden"
-        style={{ borderColor: "var(--border)", background: "var(--bg-card)" }}
+        style={{ borderColor: "var(--border-bright)", background: "var(--bg-elevated)" }}
       >
         {/* Current location */}
         <div
-          className="px-4 pt-4 pb-3 border-b"
+          className="px-4 pt-3 pb-3 border-b"
           style={{ borderColor: "var(--border)" }}
         >
           <FieldLabel accent="var(--cyan)">Current location</FieldLabel>
@@ -123,7 +123,7 @@ export function TripForm({ onSubmit, isPending }: TripFormProps) {
         </div>
 
         {/* Dropoff */}
-        <div className="px-4 pt-3 pb-4">
+        <div className="px-4 pt-3 pb-3">
           <FieldLabel accent="var(--green)">Dropoff location</FieldLabel>
           <Controller
             control={control}
@@ -145,7 +145,7 @@ export function TripForm({ onSubmit, isPending }: TripFormProps) {
       <div className="grid grid-cols-2 gap-3">
         <div
           className="rounded-xl border px-4 pt-3 pb-4"
-          style={{ borderColor: "var(--border)", background: "var(--bg-card)" }}
+          style={{ borderColor: "var(--border-bright)", background: "var(--bg-elevated)" }}
         >
           <FieldLabel accent="var(--orange)">Cycle used</FieldLabel>
           <Input
@@ -166,7 +166,7 @@ export function TripForm({ onSubmit, isPending }: TripFormProps) {
 
         <div
           className="rounded-xl border px-4 pt-3 pb-4"
-          style={{ borderColor: "var(--border)", background: "var(--bg-card)" }}
+          style={{ borderColor: "var(--border-bright)", background: "var(--bg-elevated)" }}
         >
           <FieldLabel accent="var(--cyan)">Departure</FieldLabel>
           <Input

@@ -87,15 +87,15 @@ export default function App() {
   return (
     <div className="flex flex-col h-full">
       <header
-        className="flex items-center justify-between px-6 py-3 border-b shrink-0"
+        className="flex items-center justify-between px-5 py-3 border-b shrink-0"
         style={{ borderColor: "var(--border)", background: "var(--bg-card)" }}
       >
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 ml-1">
           <div
-            className="flex items-center justify-center w-8 h-8 rounded-lg"
-            style={{ background: "var(--orange-dim)", border: "1px solid var(--orange)" }}
+            className="flex items-center justify-center w-9 h-9 rounded-xl shrink-0"
+            style={{ background: "var(--orange-dim)", border: "1px solid rgba(255,87,34,0.4)" }}
           >
-            <Truck size={16} style={{ color: "var(--orange)" }} />
+            <Truck size={17} style={{ color: "var(--orange)" }} />
           </div>
           <div className="flex items-baseline gap-2">
             <span

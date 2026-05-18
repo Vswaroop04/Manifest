@@ -78,7 +78,7 @@ export function AddressInput({
     <div ref={containerRef} className="relative">
       <div className="relative">
         <MapPin
-          size={14}
+          size={13}
           className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
           style={{ color: error ? "var(--red)" : "var(--text-dim)" }}
         />
@@ -93,7 +93,7 @@ export function AddressInput({
             onBlur();
           }}
           className={cn(
-            "pl-8",
+            "pl-[30px]",
             error && "border-[var(--red)] focus:border-[var(--red)] focus:ring-[rgba(255,23,68,0.15)]"
           )}
         />
