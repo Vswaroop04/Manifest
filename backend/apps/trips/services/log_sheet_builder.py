@@ -2,10 +2,8 @@ from dataclasses import dataclass
 from datetime import date, timedelta
 from decimal import Decimal
 
+from apps.trips.constants import OFF_DUTY_TYPES, ON_DUTY_ND_TYPES
 from apps.trips.services.hos_calculator import TripEventData
-
-_ON_DUTY_ND_TYPES = {"fuel", "pickup", "dropoff"}
-_OFF_DUTY_TYPES = {"rest", "break"}
 
 
 @dataclass
@@ -79,11 +77,11 @@ def build(events: list[TripEventData], departure_date: date) -> list[DayLogData]
             else:
                 i += 1
 
-        elif ev.event_type in _ON_DUTY_ND_TYPES and ev.end_time:
+        elif ev.event_type in ON_DUTY_ND_TYPES and ev.end_time:
             record("on_duty_nd", ev.start_time, ev.end_time)
             i += 1
 
-        elif ev.event_type in _OFF_DUTY_TYPES and ev.end_time:
+        elif ev.event_type in OFF_DUTY_TYPES and ev.end_time:
             record("off_duty", ev.start_time, ev.end_time)
             i += 1
 

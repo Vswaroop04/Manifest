@@ -5,17 +5,11 @@ from typing import Optional
 import requests
 from django.conf import settings
 
+from apps.trips.constants import GEOCODING_CACHE_TTL, HTTP_HEADERS, HTTP_TIMEOUT
+from apps.trips.exceptions import GeocodingError
 from apps.trips.utils.cache import cached_or_calculate
 
 logger = logging.getLogger("app")
-
-_TIMEOUT = 10
-_CACHE_TTL = 60 * 60 * 24
-_HEADERS = {"User-Agent": "ELD-TripPlanner/1.0"}
-
-
-class GeocodingError(Exception):
-    pass
 
 
 class Geocoder(ABC):
@@ -34,8 +28,8 @@ class PhotonGeocoder(Geocoder):
             resp = requests.get(
                 settings.PHOTON_URL,
                 params={"q": query, "limit": 5},
-                headers=_HEADERS,
-                timeout=_TIMEOUT,
+                headers=HTTP_HEADERS,
+                timeout=HTTP_TIMEOUT,
             )
             resp.raise_for_status()
             features = resp.json().get("features", [])
@@ -56,8 +50,8 @@ class NominatimGeocoder(Geocoder):
             resp = requests.get(
                 settings.NOMINATIM_URL,
                 params={"q": query, "format": "json", "limit": 5},
-                headers=_HEADERS,
-                timeout=_TIMEOUT,
+                headers=HTTP_HEADERS,
+                timeout=HTTP_TIMEOUT,
             )
             resp.raise_for_status()
             results = resp.json()
@@ -80,7 +74,7 @@ class MultiServiceGeocoder(Geocoder):
         return cached_or_calculate(
             f"geocode:{query.lower().strip()}",
             lambda: self._geocode(query),
-            ttl=_CACHE_TTL,
+            ttl=GEOCODING_CACHE_TTL,
         )
 
     def _geocode(self, query: str) -> Optional[tuple[float, float]]:
@@ -101,8 +95,8 @@ class MultiServiceGeocoder(Geocoder):
             resp = requests.get(
                 settings.PHOTON_URL,
                 params={"q": query, "limit": 5},
-                headers=_HEADERS,
-                timeout=_TIMEOUT,
+                headers=HTTP_HEADERS,
+                timeout=HTTP_TIMEOUT,
             )
             resp.raise_for_status()
             features = resp.json().get("features", [])

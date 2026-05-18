@@ -18,9 +18,6 @@ from apps.trips.constants import (
 
 logger = logging.getLogger("app")
 
-EventTypeStr = Literal["drive_start", "drive_end", "break", "fuel", "pickup", "dropoff", "rest"]
-
-
 @dataclass
 class Waypoint:
     label: str
@@ -31,7 +28,7 @@ class Waypoint:
 
 @dataclass
 class TripEventData:
-    event_type: str
+    event_type: str  # matches EventType choices in models.py
     start_time: datetime
     end_time: Optional[datetime]
     location_label: str

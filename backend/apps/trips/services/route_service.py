@@ -6,14 +6,10 @@ import polyline
 import requests
 from django.conf import settings
 
+from apps.trips.constants import HTTP_TIMEOUT, METERS_PER_MILE
+from apps.trips.exceptions import RoutingError
+
 logger = logging.getLogger("app")
-
-_TIMEOUT = 10
-_METERS_PER_MILE = Decimal("1609.344")
-
-
-class RoutingError(Exception):
-    pass
 
 
 @dataclass
@@ -25,10 +21,6 @@ class RouteResult:
 
 
 def get_route(waypoints: list[tuple[float, float]]) -> RouteResult:
-    """
-    Fetch a truck-aware route for the given waypoints (lat, lng).
-    Tries ORS HGV first, falls back to OSRM on 429 or 5xx.
-    """
     try:
         return _ors_route(waypoints)
     except RoutingError as exc:
@@ -49,7 +41,7 @@ def _ors_route(waypoints: list[tuple[float, float]]) -> RouteResult:
                 "Authorization": settings.ORS_API_KEY,
                 "Content-Type": "application/json",
             },
-            timeout=_TIMEOUT,
+            timeout=HTTP_TIMEOUT,
         )
     except requests.Timeout:
         raise RoutingError("ORS request timed out")
@@ -63,16 +55,13 @@ def _ors_route(waypoints: list[tuple[float, float]]) -> RouteResult:
     data = resp.json()
     route = data["routes"][0]
     summary = route["summary"]
-
-    total_miles = Decimal(str(summary["distance"])) / _METERS_PER_MILE
-    total_drive_secs = int(summary["duration"])
-    decoded = polyline.decode(route["geometry"])
-    geometry = [[lat, lng] for lat, lng in decoded]
+    total_miles = (Decimal(str(summary["distance"])) / METERS_PER_MILE).quantize(Decimal("0.1"))
+    geometry = [[lat, lng] for lat, lng in polyline.decode(route["geometry"])]
 
     return RouteResult(
         geometry=geometry,
-        total_miles=total_miles.quantize(Decimal("0.1")),
-        total_drive_secs=total_drive_secs,
+        total_miles=total_miles,
+        total_drive_secs=int(summary["duration"]),
         used_fallback=False,
     )
 
@@ -83,7 +72,7 @@ def _osrm_route(waypoints: list[tuple[float, float]]) -> RouteResult:
         resp = requests.get(
             f"{settings.OSRM_URL}/{coord_str}",
             params={"overview": "full", "geometries": "polyline"},
-            timeout=_TIMEOUT,
+            timeout=HTTP_TIMEOUT,
         )
     except requests.Timeout:
         raise RoutingError("OSRM request timed out")
@@ -96,14 +85,12 @@ def _osrm_route(waypoints: list[tuple[float, float]]) -> RouteResult:
         raise RoutingError(f"OSRM returned code: {data.get('code')}")
 
     route = data["routes"][0]
-    total_miles = Decimal(str(route["distance"])) / _METERS_PER_MILE
-    total_drive_secs = int(route["duration"])
-    decoded = polyline.decode(route["geometry"])
-    geometry = [[lat, lng] for lat, lng in decoded]
+    total_miles = (Decimal(str(route["distance"])) / METERS_PER_MILE).quantize(Decimal("0.1"))
+    geometry = [[lat, lng] for lat, lng in polyline.decode(route["geometry"])]
 
     return RouteResult(
         geometry=geometry,
-        total_miles=total_miles.quantize(Decimal("0.1")),
-        total_drive_secs=total_drive_secs,
+        total_miles=total_miles,
+        total_drive_secs=int(route["duration"]),
         used_fallback=True,
     )
