@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ChevronUp, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -25,7 +25,13 @@ export function NumberStepper({
   error,
   id,
 }: NumberStepperProps) {
+  const [text, setText] = useState<string>(value.toString());
+  const [focused, setFocused] = useState(false);
   const holdTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    if (!focused) setText(value.toString());
+  }, [value, focused]);
 
   function clamp(n: number) {
     return Math.min(max, Math.max(min, n));
@@ -34,11 +40,16 @@ export function NumberStepper({
   function adjust(delta: number) {
     const next = clamp(parseFloat((value + delta).toFixed(2)));
     onChange(next);
+    setText(next.toString());
   }
 
   function startHold(delta: number) {
     adjust(delta);
-    holdTimer.current = setInterval(() => adjust(delta), 120);
+    holdTimer.current = setInterval(() => {
+      const next = clamp(parseFloat((value + delta).toFixed(2)));
+      onChange(next);
+      setText(next.toString());
+    }, 120);
   }
 
   function stopHold() {
@@ -48,9 +59,15 @@ export function NumberStepper({
     }
   }
 
-  function handleInput(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleFocus() {
+    setFocused(true);
+    if (value === 0) setText("");
+  }
+
+  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const raw = e.target.value;
-    if (raw === "") {
+    setText(raw);
+    if (raw === "" || raw === "-") {
       onChange(0);
       return;
     }
@@ -59,7 +76,16 @@ export function NumberStepper({
   }
 
   function handleBlur() {
-    if (value < min || value > max) onChange(clamp(value));
+    setFocused(false);
+    const v = parseFloat(text);
+    if (isNaN(v)) {
+      onChange(0);
+      setText("0");
+    } else {
+      const c = clamp(v);
+      onChange(c);
+      setText(c.toString());
+    }
     onBlur?.();
   }
 
@@ -71,17 +97,15 @@ export function NumberStepper({
     <div className="relative">
       <input
         id={id}
-        type="number"
+        type="text"
         inputMode="decimal"
-        value={value}
-        onChange={handleInput}
+        value={text}
+        onChange={handleChange}
+        onFocus={handleFocus}
         onBlur={handleBlur}
-        min={min}
-        max={max}
-        step={step}
         placeholder={placeholder}
         className={cn(
-          "flex h-12 w-full rounded-lg border bg-[var(--bg-card)] pl-4 pr-12 py-3 text-base text-[var(--text)] placeholder:text-[var(--text-dim)] focus:outline-none focus:ring-2 transition-colors",
+          "flex h-12 w-full rounded-lg border bg-[var(--bg-card)] pl-4 pr-14 py-3 text-base text-[var(--text)] placeholder:text-[var(--text-dim)] focus:outline-none focus:ring-2 transition-colors",
           invalid
             ? "border-[var(--red)] focus:border-[var(--red)] focus:ring-[rgba(255,23,68,0.15)]"
             : "border-[var(--border)] focus:border-[var(--orange)] focus:ring-[var(--orange-dim)]"
@@ -101,7 +125,7 @@ export function NumberStepper({
           onMouseLeave={stopHold}
           onTouchStart={() => startHold(step)}
           onTouchEnd={stopHold}
-          className="flex items-center justify-center w-7 flex-1 hover:bg-[var(--bg-hover)] disabled:opacity-30 disabled:hover:bg-transparent transition-colors cursor-pointer"
+          className="flex items-center justify-center w-8 flex-1 hover:bg-[var(--bg-hover)] disabled:opacity-30 disabled:hover:bg-transparent transition-colors cursor-pointer"
           style={{ color: "var(--text-secondary)" }}
         >
           <ChevronUp size={14} />
@@ -116,21 +140,16 @@ export function NumberStepper({
           onMouseLeave={stopHold}
           onTouchStart={() => startHold(-step)}
           onTouchEnd={stopHold}
-          className="flex items-center justify-center w-7 flex-1 hover:bg-[var(--bg-hover)] disabled:opacity-30 disabled:hover:bg-transparent transition-colors cursor-pointer"
+          className="flex items-center justify-center w-8 flex-1 hover:bg-[var(--bg-hover)] disabled:opacity-30 disabled:hover:bg-transparent transition-colors cursor-pointer"
           style={{ color: "var(--text-secondary)" }}
         >
           <ChevronDown size={14} />
         </button>
       </div>
 
-      {overMax && (
+      {(overMax || underMin) && (
         <p className="text-xs mt-1.5" style={{ color: "var(--red)" }}>
-          Max {max} hours
-        </p>
-      )}
-      {underMin && (
-        <p className="text-xs mt-1.5" style={{ color: "var(--red)" }}>
-          Min {min} hours
+          {overMax ? `Max ${max} hours` : `Min ${min} hours`}
         </p>
       )}
     </div>

@@ -43,18 +43,24 @@ function minDeparture(): string {
 
 function FieldLabel({
   children,
-  accent,
+  color,
 }: {
   children: React.ReactNode;
-  accent?: string;
+  color: string;
 }) {
   return (
-    <p
-      className="text-[11px] font-bold uppercase tracking-[0.12em] mb-2.5"
-      style={{ color: accent ?? "var(--text-secondary)" }}
-    >
-      {children}
-    </p>
+    <div className="flex items-center gap-2 mb-3">
+      <span
+        className="block w-1.5 h-1.5 rounded-full"
+        style={{ background: color, boxShadow: `0 0 6px ${color}` }}
+      />
+      <span
+        className="text-[13px] font-medium tracking-wide"
+        style={{ color: "var(--text-secondary)" }}
+      >
+        {children}
+      </span>
+    </div>
   );
 }
 
@@ -63,7 +69,7 @@ function FieldError({ message }: { message?: string }) {
   if (!message) return null;
   const text = message.startsWith("form.errors.") ? t(message) : message;
   return (
-    <p className="text-xs mt-1.5" style={{ color: "var(--red)" }}>
+    <p className="text-xs mt-2" style={{ color: "var(--red)" }}>
       {text}
     </p>
   );
@@ -103,12 +109,11 @@ export function TripForm({ onSubmit, isPending }: TripFormProps) {
           background: "var(--bg-elevated)",
         }}
       >
-        {/* Current location */}
         <div
-          className="px-5 pt-5 pb-5 border-b"
+          className="px-5 py-6 border-b"
           style={{ borderColor: "var(--border)" }}
         >
-          <FieldLabel accent="var(--cyan)">Current location</FieldLabel>
+          <FieldLabel color="var(--cyan)">Current location</FieldLabel>
           <Controller
             control={control}
             name="current_location"
@@ -124,12 +129,11 @@ export function TripForm({ onSubmit, isPending }: TripFormProps) {
           />
         </div>
 
-        {/* Pickup */}
         <div
-          className="px-5 pt-5 pb-5 border-b"
+          className="px-5 py-6 border-b"
           style={{ borderColor: "var(--border)" }}
         >
-          <FieldLabel accent="var(--amber)">Pickup location</FieldLabel>
+          <FieldLabel color="var(--amber)">Pickup location</FieldLabel>
           <Controller
             control={control}
             name="pickup_location"
@@ -145,9 +149,8 @@ export function TripForm({ onSubmit, isPending }: TripFormProps) {
           />
         </div>
 
-        {/* Dropoff */}
-        <div className="px-5 pt-5 pb-6">
-          <FieldLabel accent="var(--green)">Dropoff location</FieldLabel>
+        <div className="px-5 py-6">
+          <FieldLabel color="var(--green)">Dropoff location</FieldLabel>
           <Controller
             control={control}
             name="dropoff_location"
@@ -167,13 +170,13 @@ export function TripForm({ onSubmit, isPending }: TripFormProps) {
       {/* Cycle + Departure */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div
-          className="rounded-2xl border px-5 pt-5 pb-5"
+          className="rounded-2xl border px-5 py-5"
           style={{
             borderColor: "var(--border-bright)",
             background: "var(--bg-elevated)",
           }}
         >
-          <FieldLabel accent="var(--orange)">Cycle used</FieldLabel>
+          <FieldLabel color="var(--orange)">Cycle used</FieldLabel>
           <Controller
             control={control}
             name="cycle_hours_used"
@@ -185,25 +188,25 @@ export function TripForm({ onSubmit, isPending }: TripFormProps) {
                 min={0}
                 max={70}
                 step={0.5}
-                placeholder="0 – 70"
+                placeholder="0"
                 error={!!errors.cycle_hours_used}
               />
             )}
           />
-          <p className="text-xs mt-2" style={{ color: "var(--text-dim)" }}>
-            hours · 70-hr / 8-day cycle
+          <p className="text-xs mt-2.5" style={{ color: "var(--text-dim)" }}>
+            hours · 70-hr cycle
           </p>
           <FieldError message={errors.cycle_hours_used?.message} />
         </div>
 
         <div
-          className="rounded-2xl border px-5 pt-5 pb-5"
+          className="rounded-2xl border px-5 py-5"
           style={{
             borderColor: "var(--border-bright)",
             background: "var(--bg-elevated)",
           }}
         >
-          <FieldLabel accent="var(--cyan)">Departure</FieldLabel>
+          <FieldLabel color="var(--cyan)">Departure</FieldLabel>
           <Input
             type="datetime-local"
             min={minDeparture()}
@@ -217,7 +220,7 @@ export function TripForm({ onSubmit, isPending }: TripFormProps) {
               paddingRight: "8px",
             }}
           />
-          <p className="text-xs mt-2" style={{ color: "var(--text-dim)" }}>
+          <p className="text-xs mt-2.5" style={{ color: "var(--text-dim)" }}>
             must be in the future
           </p>
           <FieldError message={errors.departure_time?.message} />
@@ -228,11 +231,11 @@ export function TripForm({ onSubmit, isPending }: TripFormProps) {
         type="submit"
         size="lg"
         disabled={isPending}
-        className="w-full font-bold tracking-widest mt-1"
+        className="w-full font-bold tracking-widest mt-2"
         style={{
           fontFamily: "var(--font-display)",
           fontSize: "1rem",
-          height: "52px",
+          height: "54px",
         }}
       >
         {isPending ? (
