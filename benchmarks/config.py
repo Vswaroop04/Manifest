@@ -99,7 +99,7 @@ ROUTING_TEST_CASES = [
         "start": [-87.6298, 41.8781],
         "waypoint": [-96.7970, 32.7767],
         "end": [-118.2437, 34.0522],
-        "expected_miles": 2940,
+        "expected_miles": 2400,
         "tolerance_pct": 10,
     },
 ]
