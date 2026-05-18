@@ -18,6 +18,7 @@ class EventType(models.TextChoices):
     PICKUP = "pickup", "Pickup"
     DROPOFF = "dropoff", "Dropoff"
     REST = "rest", "Rest"
+    OFF_DUTY = "off_duty", "Off Duty"
 
 
 class TripRequest(TimeStampedModel):
