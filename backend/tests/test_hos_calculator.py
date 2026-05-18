@@ -1,7 +1,6 @@
 from decimal import Decimal
 from datetime import datetime, timezone, timedelta
 
-import pytest
 
 from apps.trips.services.hos_calculator import calculate, Waypoint
 
@@ -35,7 +34,8 @@ def test_short_trip_no_limits_hit():
     assert "break" not in types
     assert "fuel" not in types
     assert "dropoff" in types
-    assert types[0] == "drive_start"
+    assert types[0] == "off_duty"
+    assert types[1] == "drive_start"
 
 
 # ---------------------------------------------------------------------------
@@ -249,4 +249,8 @@ def test_departure_time_offset_is_respected():
         total_drive_secs=11880,
         waypoints=[Waypoint("Dropoff", Decimal("182"), "dropoff")],
     )
-    assert events[0].start_time == late_start
+    # first event is off_duty from midnight to departure, second is drive_start
+    assert events[0].event_type == "off_duty"
+    assert events[0].end_time == late_start
+    assert events[1].event_type == "drive_start"
+    assert events[1].start_time == late_start
