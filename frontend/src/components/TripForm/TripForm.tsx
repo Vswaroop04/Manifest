@@ -15,7 +15,10 @@ const schema = z.object({
     .number({ invalid_type_error: "form.errors.cycleHoursRequired" })
     .min(0, "form.errors.cycleHoursMin")
     .max(70, "form.errors.cycleHoursMax"),
-  departure_time: z.string().refine((v) => !!v && new Date(v) > new Date(), "form.errors.departurePast"),
+  departure_time: z.string().refine(
+    (v) => !!v && new Date(v) > new Date(),
+    "form.errors.departurePast"
+  ),
 });
 
 export type TripFormValues = z.infer<typeof schema>;
@@ -31,10 +34,16 @@ function defaultDeparture(): string {
   return d.toISOString().slice(0, 16);
 }
 
-function FieldLabel({ children, accent }: { children: React.ReactNode; accent?: string }) {
+function FieldLabel({
+  children,
+  accent,
+}: {
+  children: React.ReactNode;
+  accent?: string;
+}) {
   return (
     <p
-      className="text-[10px] font-semibold uppercase tracking-[0.1em] mb-1.5"
+      className="text-[11px] font-bold uppercase tracking-[0.12em] mb-2"
       style={{ color: accent ?? "var(--text-secondary)" }}
     >
       {children}
@@ -46,7 +55,11 @@ function FieldError({ message }: { message?: string }) {
   const { t } = useTranslation();
   if (!message) return null;
   const text = message.startsWith("form.errors.") ? t(message) : message;
-  return <p className="text-[11px] mt-1" style={{ color: "var(--red)" }}>{text}</p>;
+  return (
+    <p className="text-xs mt-1.5" style={{ color: "var(--red)" }}>
+      {text}
+    </p>
+  );
 }
 
 export function TripForm({ onSubmit, isPending }: TripFormProps) {
@@ -73,18 +86,17 @@ export function TripForm({ onSubmit, isPending }: TripFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-
-      {/* Route fields */}
+    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-3">
+      {/* Route fields grouped card */}
       <div
-        className="rounded-xl border overflow-hidden"
-        style={{ borderColor: "var(--border-bright)", background: "var(--bg-elevated)" }}
+        className="rounded-2xl border overflow-hidden"
+        style={{
+          borderColor: "var(--border-bright)",
+          background: "var(--bg-elevated)",
+        }}
       >
         {/* Current location */}
-        <div
-          className="px-4 pt-3 pb-3 border-b"
-          style={{ borderColor: "var(--border)" }}
-        >
+        <div className="px-5 pt-5 pb-4 border-b" style={{ borderColor: "var(--border)" }}>
           <FieldLabel accent="var(--cyan)">Current location</FieldLabel>
           <Controller
             control={control}
@@ -102,10 +114,7 @@ export function TripForm({ onSubmit, isPending }: TripFormProps) {
         </div>
 
         {/* Pickup */}
-        <div
-          className="px-4 pt-3 pb-3 border-b"
-          style={{ borderColor: "var(--border)" }}
-        >
+        <div className="px-5 pt-4 pb-4 border-b" style={{ borderColor: "var(--border)" }}>
           <FieldLabel accent="var(--amber)">Pickup location</FieldLabel>
           <Controller
             control={control}
@@ -123,7 +132,7 @@ export function TripForm({ onSubmit, isPending }: TripFormProps) {
         </div>
 
         {/* Dropoff */}
-        <div className="px-4 pt-3 pb-3">
+        <div className="px-5 pt-4 pb-5">
           <FieldLabel accent="var(--green)">Dropoff location</FieldLabel>
           <Controller
             control={control}
@@ -141,11 +150,14 @@ export function TripForm({ onSubmit, isPending }: TripFormProps) {
         </div>
       </div>
 
-      {/* Cycle + Departure row */}
+      {/* Cycle + Departure */}
       <div className="grid grid-cols-2 gap-3">
         <div
-          className="rounded-xl border px-4 pt-3 pb-4"
-          style={{ borderColor: "var(--border-bright)", background: "var(--bg-elevated)" }}
+          className="rounded-2xl border px-5 pt-4 pb-5"
+          style={{
+            borderColor: "var(--border-bright)",
+            background: "var(--bg-elevated)",
+          }}
         >
           <FieldLabel accent="var(--orange)">Cycle used</FieldLabel>
           <Input
@@ -158,15 +170,18 @@ export function TripForm({ onSubmit, isPending }: TripFormProps) {
             className={errors.cycle_hours_used ? "border-[var(--red)]" : ""}
             style={{ fontFamily: "var(--font-mono)" }}
           />
-          <p className="text-[10px] mt-1.5" style={{ color: "var(--text-dim)" }}>
+          <p className="text-xs mt-2" style={{ color: "var(--text-dim)" }}>
             hrs · 70-hr cycle
           </p>
           <FieldError message={errors.cycle_hours_used?.message} />
         </div>
 
         <div
-          className="rounded-xl border px-4 pt-3 pb-4"
-          style={{ borderColor: "var(--border-bright)", background: "var(--bg-elevated)" }}
+          className="rounded-2xl border px-5 pt-4 pb-5"
+          style={{
+            borderColor: "var(--border-bright)",
+            background: "var(--bg-elevated)",
+          }}
         >
           <FieldLabel accent="var(--cyan)">Departure</FieldLabel>
           <Input
@@ -176,9 +191,9 @@ export function TripForm({ onSubmit, isPending }: TripFormProps) {
             style={{
               colorScheme: "dark",
               fontFamily: "var(--font-mono)",
-              fontSize: "0.7rem",
-              paddingLeft: "8px",
-              paddingRight: "4px",
+              fontSize: "0.72rem",
+              paddingLeft: "12px",
+              paddingRight: "6px",
             }}
           />
           <FieldError message={errors.departure_time?.message} />
@@ -189,12 +204,16 @@ export function TripForm({ onSubmit, isPending }: TripFormProps) {
         type="submit"
         size="lg"
         disabled={isPending}
-        className="w-full font-semibold tracking-wide"
-        style={{ fontFamily: "var(--font-display)", fontSize: "1rem", letterSpacing: "0.1em" }}
+        className="w-full font-bold tracking-widest mt-1"
+        style={{
+          fontFamily: "var(--font-display)",
+          fontSize: "1rem",
+          height: "52px",
+        }}
       >
         {isPending ? (
           <>
-            <Loader2 size={15} className="animate-spin" />
+            <Loader2 size={16} className="animate-spin" />
             {t("form.submitting")}
           </>
         ) : (

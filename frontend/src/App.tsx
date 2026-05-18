@@ -128,7 +128,7 @@ export default function App() {
 
       <div className="flex flex-1 overflow-hidden flex-col md:flex-row">
         <aside
-          className="w-full md:w-[400px] shrink-0 flex flex-col gap-4 p-5 overflow-y-auto border-b md:border-b-0 md:border-r"
+          className="w-full md:w-[420px] shrink-0 flex flex-col gap-4 px-4 py-5 md:px-6 overflow-y-auto border-b md:border-b-0 md:border-r"
           style={{ borderColor: "var(--border)" }}
         >
           <TripForm onSubmit={handleSubmit} isPending={isPending} />
