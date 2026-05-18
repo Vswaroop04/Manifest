@@ -151,6 +151,14 @@ def _append_drive_end(
     state.current_mile += miles
 
 
+def _day_start(dt: datetime) -> datetime:
+    return dt.replace(hour=0, minute=0, second=0, microsecond=0)
+
+
+def _day_end(dt: datetime) -> datetime:
+    return dt.replace(hour=23, minute=59, second=59, microsecond=999999)
+
+
 def calculate(
     departure_time: datetime,
     cycle_hours_used: Decimal,
@@ -175,6 +183,19 @@ def calculate(
     mandatory = _build_mandatory_stops(waypoints, total_miles)
     stop_idx = 0
     events: list[TripEventData] = []
+
+    # Off-duty from midnight to departure if driver doesn't start at midnight
+    midnight = _day_start(departure_time)
+    if departure_time > midnight:
+        events.append(TripEventData(
+            event_type="off_duty",
+            start_time=midnight,
+            end_time=departure_time,
+            location_label="",
+            coords=None,
+            mile_marker=Decimal("0"),
+            metadata={"trigger": "pre_departure"},
+        ))
 
     events.append(TripEventData(
         event_type="drive_start",
@@ -265,5 +286,19 @@ def calculate(
                     coords=None,
                     mile_marker=state.current_mile,
                 ))
+
+    # Off-duty from arrival to midnight if trip ends before end of day
+    arrival_time = state.current_time
+    eod = _day_end(arrival_time)
+    if arrival_time < eod:
+        events.append(TripEventData(
+            event_type="off_duty",
+            start_time=arrival_time,
+            end_time=eod,
+            location_label="",
+            coords=None,
+            mile_marker=total_miles,
+            metadata={"trigger": "post_arrival"},
+        ))
 
     return events
