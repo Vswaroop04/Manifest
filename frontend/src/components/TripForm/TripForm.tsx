@@ -5,6 +5,7 @@ import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AddressInput } from "./AddressInput";
+import { NumberStepper } from "./NumberStepper";
 import { useTranslation } from "@/hooks/useTranslation";
 
 const schema = z.object({
@@ -34,6 +35,12 @@ function defaultDeparture(): string {
   return d.toISOString().slice(0, 16);
 }
 
+function minDeparture(): string {
+  const d = new Date();
+  d.setSeconds(0, 0);
+  return d.toISOString().slice(0, 16);
+}
+
 function FieldLabel({
   children,
   accent,
@@ -43,7 +50,7 @@ function FieldLabel({
 }) {
   return (
     <p
-      className="text-[11px] font-bold uppercase tracking-[0.12em] mb-2"
+      className="text-[11px] font-bold uppercase tracking-[0.12em] mb-2.5"
       style={{ color: accent ?? "var(--text-secondary)" }}
     >
       {children}
@@ -71,6 +78,7 @@ export function TripForm({ onSubmit, isPending }: TripFormProps) {
     formState: { errors },
   } = useForm<TripFormValues>({
     resolver: zodResolver(schema),
+    mode: "onChange",
     defaultValues: {
       current_location: "",
       pickup_location: "",
@@ -96,7 +104,10 @@ export function TripForm({ onSubmit, isPending }: TripFormProps) {
         }}
       >
         {/* Current location */}
-        <div className="px-5 pt-5 pb-4 border-b" style={{ borderColor: "var(--border)" }}>
+        <div
+          className="px-5 pt-5 pb-5 border-b"
+          style={{ borderColor: "var(--border)" }}
+        >
           <FieldLabel accent="var(--cyan)">Current location</FieldLabel>
           <Controller
             control={control}
@@ -114,7 +125,10 @@ export function TripForm({ onSubmit, isPending }: TripFormProps) {
         </div>
 
         {/* Pickup */}
-        <div className="px-5 pt-4 pb-4 border-b" style={{ borderColor: "var(--border)" }}>
+        <div
+          className="px-5 pt-5 pb-5 border-b"
+          style={{ borderColor: "var(--border)" }}
+        >
           <FieldLabel accent="var(--amber)">Pickup location</FieldLabel>
           <Controller
             control={control}
@@ -132,7 +146,7 @@ export function TripForm({ onSubmit, isPending }: TripFormProps) {
         </div>
 
         {/* Dropoff */}
-        <div className="px-5 pt-4 pb-5">
+        <div className="px-5 pt-5 pb-6">
           <FieldLabel accent="var(--green)">Dropoff location</FieldLabel>
           <Controller
             control={control}
@@ -151,33 +165,39 @@ export function TripForm({ onSubmit, isPending }: TripFormProps) {
       </div>
 
       {/* Cycle + Departure */}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div
-          className="rounded-2xl border px-5 pt-4 pb-5"
+          className="rounded-2xl border px-5 pt-5 pb-5"
           style={{
             borderColor: "var(--border-bright)",
             background: "var(--bg-elevated)",
           }}
         >
           <FieldLabel accent="var(--orange)">Cycle used</FieldLabel>
-          <Input
-            type="number"
-            step="0.5"
-            min={0}
-            max={70}
-            placeholder="0 – 70"
-            {...register("cycle_hours_used", { valueAsNumber: true })}
-            className={errors.cycle_hours_used ? "border-[var(--red)]" : ""}
-            style={{ fontFamily: "var(--font-mono)" }}
+          <Controller
+            control={control}
+            name="cycle_hours_used"
+            render={({ field }) => (
+              <NumberStepper
+                value={field.value ?? 0}
+                onChange={field.onChange}
+                onBlur={field.onBlur}
+                min={0}
+                max={70}
+                step={0.5}
+                placeholder="0 – 70"
+                error={!!errors.cycle_hours_used}
+              />
+            )}
           />
           <p className="text-xs mt-2" style={{ color: "var(--text-dim)" }}>
-            hrs · 70-hr cycle
+            hours · 70-hr / 8-day cycle
           </p>
           <FieldError message={errors.cycle_hours_used?.message} />
         </div>
 
         <div
-          className="rounded-2xl border px-5 pt-4 pb-5"
+          className="rounded-2xl border px-5 pt-5 pb-5"
           style={{
             borderColor: "var(--border-bright)",
             background: "var(--bg-elevated)",
@@ -186,16 +206,20 @@ export function TripForm({ onSubmit, isPending }: TripFormProps) {
           <FieldLabel accent="var(--cyan)">Departure</FieldLabel>
           <Input
             type="datetime-local"
+            min={minDeparture()}
             {...register("departure_time")}
             className={errors.departure_time ? "border-[var(--red)]" : ""}
             style={{
               colorScheme: "dark",
               fontFamily: "var(--font-mono)",
-              fontSize: "0.72rem",
-              paddingLeft: "12px",
-              paddingRight: "6px",
+              fontSize: "0.78rem",
+              paddingLeft: "14px",
+              paddingRight: "8px",
             }}
           />
+          <p className="text-xs mt-2" style={{ color: "var(--text-dim)" }}>
+            must be in the future
+          </p>
           <FieldError message={errors.departure_time?.message} />
         </div>
       </div>
