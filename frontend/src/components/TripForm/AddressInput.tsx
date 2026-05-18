@@ -76,28 +76,20 @@ export function AddressInput({
 
   return (
     <div ref={containerRef} className="relative">
-      <div className="relative">
-        <MapPin
-          size={13}
-          className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
-          style={{ color: error ? "var(--red)" : "var(--text-dim)" }}
-        />
-        <Input
-          id={id}
-          value={value}
-          placeholder={placeholder}
-          onChange={(e) => onChange(e.target.value)}
-          onFocus={() => setFocused(true)}
-          onBlur={() => {
-            setTimeout(() => setFocused(false), 150);
-            onBlur();
-          }}
-          className={cn(
-            "pl-[30px]",
-            error && "border-[var(--red)] focus:border-[var(--red)] focus:ring-[rgba(255,23,68,0.15)]"
-          )}
-        />
-      </div>
+      <Input
+        id={id}
+        value={value}
+        placeholder={placeholder}
+        onChange={(e) => onChange(e.target.value)}
+        onFocus={() => setFocused(true)}
+        onBlur={() => {
+          setTimeout(() => setFocused(false), 150);
+          onBlur();
+        }}
+        className={cn(
+          error && "border-[var(--red)] focus:border-[var(--red)] focus:ring-[rgba(255,23,68,0.15)]"
+        )}
+      />
 
       {open && (
         <ul
@@ -119,7 +111,7 @@ export function AddressInput({
       )}
 
       {error && (
-        <p className="mt-1 text-xs" style={{ color: "var(--red)" }}>
+        <p className="mt-1 text-[11px]" style={{ color: "var(--red)" }}>
           {error}
         </p>
       )}
