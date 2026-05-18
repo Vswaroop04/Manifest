@@ -24,7 +24,7 @@ class TripRequest(TimeStampedModel):
     current_location = models.CharField(max_length=500)
     pickup_location = models.CharField(max_length=500)
     dropoff_location = models.CharField(max_length=500)
-    cycle_hours_used = models.FloatField()
+    cycle_hours_used = models.DecimalField(max_digits=5, decimal_places=2)
     departure_time = models.DateTimeField()
 
     class Meta:
@@ -45,6 +45,9 @@ class Trip(TimeStampedModel):
 
     class Meta:
         ordering = ["-created"]
+        indexes = [
+            models.Index(fields=["status"]),
+        ]
 
     def __str__(self) -> str:
         return f"Trip {self.id} [{self.status}]"
@@ -53,7 +56,7 @@ class Trip(TimeStampedModel):
 class Route(TimeStampedModel):
     trip = models.OneToOneField(Trip, on_delete=models.CASCADE, related_name="route")
     geometry = models.JSONField()
-    total_miles = models.FloatField()
+    total_miles = models.DecimalField(max_digits=8, decimal_places=1)
     total_drive_secs = models.IntegerField()
     used_fallback = models.BooleanField(default=False)
 
@@ -68,10 +71,14 @@ class TripEvent(TimeStampedModel):
     end_time = models.DateTimeField(null=True, blank=True)
     location_label = models.CharField(max_length=500, blank=True)
     coords = models.JSONField(null=True, blank=True)
-    mile_marker = models.FloatField()
+    mile_marker = models.DecimalField(max_digits=8, decimal_places=1)
+    metadata = models.JSONField(default=dict)
 
     class Meta:
         ordering = ["start_time"]
+        indexes = [
+            models.Index(fields=["trip", "start_time"]),
+        ]
 
     def __str__(self) -> str:
         return f"{self.event_type} @ {self.mile_marker:.0f} mi — {self.start_time}"
@@ -83,7 +90,7 @@ class DayLog(TimeStampedModel):
     date = models.DateField()
     segments = models.JSONField()
     totals = models.JSONField()
-    recap_70hr = models.FloatField()
+    recap_70hr = models.DecimalField(max_digits=5, decimal_places=2)
 
     class Meta:
         ordering = ["day_number"]
