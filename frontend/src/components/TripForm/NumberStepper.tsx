@@ -105,7 +105,7 @@ export function NumberStepper({
         onBlur={handleBlur}
         placeholder={placeholder}
         className={cn(
-          "flex h-12 w-full rounded-lg border bg-[var(--bg-card)] pl-4 pr-14 py-3 text-base text-[var(--text)] placeholder:text-[var(--text-dim)] focus:outline-none focus:ring-2 transition-colors",
+          "flex h-12 w-full rounded-lg border bg-[var(--bg-card)] pl-5 pr-14 py-3 text-base text-[var(--text)] placeholder:text-[var(--text-dim)] focus:outline-none focus:ring-2 transition-colors",
           invalid
             ? "border-[var(--red)] focus:border-[var(--red)] focus:ring-[rgba(255,23,68,0.15)]"
             : "border-[var(--border)] focus:border-[var(--orange)] focus:ring-[var(--orange-dim)]"

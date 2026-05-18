@@ -84,7 +84,7 @@ export function RouteMap({ geometry, events, currentCoords, pickupCoords, dropof
 
   return (
     <div
-      className="rounded-xl overflow-hidden border"
+      className="rounded-xl overflow-hidden border mx-2"
       style={{ borderColor: "var(--border)", height: "100%", minHeight: "380px" }}
     >
       <MapContainer

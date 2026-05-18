@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
-import { MapPin } from "lucide-react";
+import { MapPin, Loader2, SearchX } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Suggestion {
@@ -17,14 +17,9 @@ interface AddressInputProps {
 }
 
 async function fetchSuggestions(q: string): Promise<Suggestion[]> {
-  if (q.length < 2) return [];
-  try {
-    const res = await fetch(`/api/geocode/?q=${encodeURIComponent(q)}`);
-    if (!res.ok) return [];
-    return (await res.json()) as Suggestion[];
-  } catch {
-    return [];
-  }
+  const res = await fetch(`/api/geocode/?q=${encodeURIComponent(q)}`);
+  if (!res.ok) throw new Error("geocode failed");
+  return (await res.json()) as Suggestion[];
 }
 
 export function AddressInput({
@@ -36,6 +31,8 @@ export function AddressInput({
   id,
 }: AddressInputProps) {
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [searched, setSearched] = useState(false);
   const [open, setOpen] = useState(false);
   const [focused, setFocused] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -45,13 +42,22 @@ export function AddressInput({
     if (!focused || value.length < 2) {
       setSuggestions([]);
       setOpen(false);
+      setSearched(false);
       return;
     }
+    setOpen(true);
+    setLoading(true);
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(async () => {
-      const results = await fetchSuggestions(value);
-      setSuggestions(results);
-      setOpen(results.length > 0);
+      try {
+        const results = await fetchSuggestions(value);
+        setSuggestions(results);
+      } catch {
+        setSuggestions([]);
+      } finally {
+        setLoading(false);
+        setSearched(true);
+      }
     }, 300);
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -91,11 +97,39 @@ export function AddressInput({
         )}
       />
 
+      {loading && (
+        <Loader2
+          size={14}
+          className="absolute right-3 top-1/2 -translate-y-1/2 animate-spin pointer-events-none"
+          style={{ color: "var(--text-dim)" }}
+        />
+      )}
+
       {open && (
         <ul
           className="absolute z-[100] w-full mt-1 rounded-lg border border-[var(--border-bright)] overflow-hidden shadow-2xl"
           style={{ background: "var(--bg-elevated)" }}
         >
+          {loading && suggestions.length === 0 && (
+            <li
+              className="flex items-center gap-2 px-3 py-3 text-sm"
+              style={{ color: "var(--text-dim)" }}
+            >
+              <Loader2 size={13} className="animate-spin" style={{ color: "var(--orange)" }} />
+              Searching US addresses…
+            </li>
+          )}
+
+          {!loading && searched && suggestions.length === 0 && (
+            <li
+              className="flex items-center gap-2 px-3 py-3 text-sm"
+              style={{ color: "var(--text-dim)" }}
+            >
+              <SearchX size={13} />
+              No US results for "{value}"
+            </li>
+          )}
+
           {suggestions.map((s, i) => (
             <li
               key={i}
@@ -111,7 +145,7 @@ export function AddressInput({
       )}
 
       {error && (
-        <p className="mt-1 text-[11px]" style={{ color: "var(--red)" }}>
+        <p className="mt-1.5 text-xs" style={{ color: "var(--red)" }}>
           {error}
         </p>
       )}

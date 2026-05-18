@@ -220,8 +220,8 @@ export function TripForm({ onSubmit, isPending }: TripFormProps) {
               colorScheme: "dark",
               fontFamily: "var(--font-mono)",
               fontSize: "0.78rem",
-              paddingLeft: "14px",
-              paddingRight: "8px",
+              paddingLeft: "20px",
+              paddingRight: "12px",
             }}
           />
           <p className="text-xs mt-2.5" style={{ color: "var(--text-dim)" }}>
