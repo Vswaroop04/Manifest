@@ -1,0 +1,103 @@
+{
+  "app": {
+    "name": "MANIFEST",
+    "tagline": "ELD Trip Planner"
+  },
+  "nav": {
+    "newTrip": "New Trip",
+    "history": "Trip History"
+  },
+  "form": {
+    "title": "Plan Your Trip",
+    "subtitle": "Enter trip details to generate your HOS-compliant route",
+    "currentLocation": {
+      "label": "Current Location",
+      "placeholder": "Where are you now?"
+    },
+    "pickupLocation": {
+      "label": "Pickup Location",
+      "placeholder": "Where is the pickup?"
+    },
+    "dropoffLocation": {
+      "label": "Dropoff Location",
+      "placeholder": "Where is the dropoff?"
+    },
+    "cycleHours": {
+      "label": "Cycle Hours Used",
+      "placeholder": "0 – 70",
+      "hint": "Hours used in current 70-hr / 8-day cycle"
+    },
+    "departureTime": {
+      "label": "Departure Time",
+      "hint": "Must be a future time"
+    },
+    "submit": "Calculate Route",
+    "submitting": "Planning...",
+    "errors": {
+      "currentLocationRequired": "Enter your current location",
+      "pickupLocationRequired": "Enter a pickup location",
+      "dropoffLocationRequired": "Enter a dropoff location",
+      "cycleHoursMin": "Cycle hours cannot be negative",
+      "cycleHoursMax": "Cycle hours cannot exceed 70",
+      "cycleHoursRequired": "Enter cycle hours used",
+      "departurePast": "Departure time must be in the future",
+      "departureRequired": "Enter a departure time"
+    }
+  },
+  "results": {
+    "emptyTitle": "Your route will appear here",
+    "emptySubtitle": "Fill in the trip details and hit Calculate Route",
+    "tabs": {
+      "map": "Route Map",
+      "logs": "Log Sheets"
+    }
+  },
+  "summary": {
+    "title": "Trip Summary",
+    "totalMiles": "Total Miles",
+    "drivingTime": "Drive Time",
+    "totalDays": "Days",
+    "cycleAfter": "Cycle Used After",
+    "fallbackWarning": "Truck routing unavailable — car profile used, restrictions not applied"
+  },
+  "map": {
+    "loadingTiles": "Loading map...",
+    "stopPopup": {
+      "arrive": "Arrive",
+      "depart": "Depart",
+      "duration": "Duration",
+      "mileMarker": "Mile"
+    }
+  },
+  "logSheet": {
+    "title": "Day {{day}} — {{date}}",
+    "rows": {
+      "offDuty": "Off Duty",
+      "sleeperBerth": "Sleeper",
+      "driving": "Driving",
+      "onDutyND": "On Duty ND"
+    },
+    "totals": {
+      "label": "Totals",
+      "driving": "Driving",
+      "onDutyND": "On Duty ND",
+      "offDuty": "Off Duty",
+      "recap": "70-Hr Recap"
+    },
+    "hours": "{{h}}h {{m}}m"
+  },
+  "events": {
+    "off_duty": "Off Duty",
+    "driving": "Driving",
+    "break": "30-Min Break",
+    "rest": "10-Hr Rest",
+    "fuel": "Fuel Stop",
+    "pickup": "Pickup",
+    "dropoff": "Dropoff"
+  },
+  "errors": {
+    "geocodeFailed": "Could not find that location. Try a more specific address.",
+    "routingFailed": "Routing service unavailable. Please try again.",
+    "generic": "Something went wrong. Please try again."
+  }
+}
