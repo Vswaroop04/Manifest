@@ -8,8 +8,6 @@ from django.conf import settings
 
 logger = logging.getLogger("app")
 
-_ORS_URL = "https://api.openrouteservice.org/v2/directions/driving-hgv"
-_OSRM_URL = "http://router.project-osrm.org/route/v1/driving"
 _TIMEOUT = 10
 _METERS_PER_MILE = Decimal("1609.344")
 
@@ -45,7 +43,7 @@ def _ors_route(waypoints: list[tuple[float, float]]) -> RouteResult:
     coords = [[lng, lat] for lat, lng in waypoints]
     try:
         resp = requests.post(
-            _ORS_URL,
+            settings.ORS_URL,
             json={"coordinates": coords},
             headers={
                 "Authorization": settings.ORS_API_KEY,
@@ -83,7 +81,7 @@ def _osrm_route(waypoints: list[tuple[float, float]]) -> RouteResult:
     coord_str = ";".join(f"{lng},{lat}" for lat, lng in waypoints)
     try:
         resp = requests.get(
-            f"{_OSRM_URL}/{coord_str}",
+            f"{settings.OSRM_URL}/{coord_str}",
             params={"overview": "full", "geometries": "polyline"},
             timeout=_TIMEOUT,
         )

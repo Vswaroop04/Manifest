@@ -102,6 +102,12 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 ORS_API_KEY = os.environ.get("ORS_API_KEY", "")
 
+# External service URLs — override in settings if self-hosting
+PHOTON_URL = os.environ.get("PHOTON_URL", "https://photon.komoot.io/api/")
+NOMINATIM_URL = os.environ.get("NOMINATIM_URL", "https://nominatim.openstreetmap.org/search")
+ORS_URL = os.environ.get("ORS_URL", "https://api.openrouteservice.org/v2/directions/driving-hgv")
+OSRM_URL = os.environ.get("OSRM_URL", "http://router.project-osrm.org/route/v1/driving")
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,

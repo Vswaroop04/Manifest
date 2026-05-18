@@ -3,15 +3,14 @@ from abc import ABC, abstractmethod
 from typing import Optional
 
 import requests
+from django.conf import settings
 
 from apps.trips.utils.cache import cached_or_calculate
 
 logger = logging.getLogger("app")
 
-_PHOTON_URL = "https://photon.komoot.io/api/"
-_NOMINATIM_URL = "https://nominatim.openstreetmap.org/search"
 _TIMEOUT = 10
-_CACHE_TTL = 60 * 60 * 24  # 24 hours
+_CACHE_TTL = 60 * 60 * 24
 _HEADERS = {"User-Agent": "ELD-TripPlanner/1.0"}
 
 
@@ -33,7 +32,7 @@ class PhotonGeocoder(Geocoder):
     def geocode(self, query: str) -> Optional[tuple[float, float]]:
         try:
             resp = requests.get(
-                _PHOTON_URL,
+                settings.PHOTON_URL,
                 params={"q": query, "limit": 5},
                 headers=_HEADERS,
                 timeout=_TIMEOUT,
@@ -55,7 +54,7 @@ class NominatimGeocoder(Geocoder):
     def geocode(self, query: str) -> Optional[tuple[float, float]]:
         try:
             resp = requests.get(
-                _NOMINATIM_URL,
+                settings.NOMINATIM_URL,
                 params={"q": query, "format": "json", "limit": 5},
                 headers=_HEADERS,
                 timeout=_TIMEOUT,
@@ -98,10 +97,9 @@ class MultiServiceGeocoder(Geocoder):
         return result
 
     def suggest(self, query: str) -> list[dict[str, object]]:
-        """Return up to 5 address suggestions with label and coords for autocomplete."""
         try:
             resp = requests.get(
-                _PHOTON_URL,
+                settings.PHOTON_URL,
                 params={"q": query, "limit": 5},
                 headers=_HEADERS,
                 timeout=_TIMEOUT,
@@ -112,18 +110,9 @@ class MultiServiceGeocoder(Geocoder):
             for f in features:
                 props = f.get("properties", {})
                 coords = f["geometry"]["coordinates"]
-                parts = [
-                    props.get("name"),
-                    props.get("city"),
-                    props.get("state"),
-                    props.get("country"),
-                ]
+                parts = [props.get("name"), props.get("city"), props.get("state"), props.get("country")]
                 label = ", ".join(p for p in parts if p)
-                suggestions.append({
-                    "label": label,
-                    "lat": float(coords[1]),
-                    "lng": float(coords[0]),
-                })
+                suggestions.append({"label": label, "lat": float(coords[1]), "lng": float(coords[0])})
             return suggestions
         except Exception as exc:
             logger.warning("Suggest failed", extra={"query": query, "error": str(exc)})
@@ -131,7 +120,4 @@ class MultiServiceGeocoder(Geocoder):
 
 
 def make_geocoder() -> MultiServiceGeocoder:
-    return MultiServiceGeocoder(
-        primary=PhotonGeocoder(),
-        fallback=NominatimGeocoder(),
-    )
+    return MultiServiceGeocoder(primary=PhotonGeocoder(), fallback=NominatimGeocoder())

@@ -4,18 +4,19 @@ from datetime import datetime, timedelta
 from decimal import Decimal
 from typing import Literal, Optional
 
-logger = logging.getLogger("app")
+from apps.trips.constants import (
+    FUEL_INTERVAL_MILES as _FUEL_INTERVAL,
+    FUEL_STOP_DURATION as _FUEL_DURATION,
+    HOS_BREAK_DURATION as _BREAK_DURATION,
+    HOS_BREAK_TRIGGER as _BREAK_TRIGGER,
+    HOS_CYCLE_LIMIT as _CYCLE_LIMIT,
+    HOS_DRIVE_LIMIT as _DRIVE_LIMIT,
+    HOS_REST_DURATION as _REST_DURATION,
+    HOS_WINDOW_LIMIT as _WINDOW_LIMIT,
+    STOP_DURATION as _STOP_DURATION,
+)
 
-# HOS rule constants
-_DRIVE_LIMIT = timedelta(hours=11)
-_WINDOW_LIMIT = timedelta(hours=14)
-_BREAK_TRIGGER = timedelta(hours=8)
-_BREAK_DURATION = timedelta(minutes=30)
-_REST_DURATION = timedelta(hours=10)
-_CYCLE_LIMIT = Decimal("70")
-_FUEL_INTERVAL = Decimal("1000")
-_STOP_DURATION = timedelta(hours=1)
-_FUEL_DURATION = timedelta(minutes=30)
+logger = logging.getLogger("app")
 
 EventTypeStr = Literal["drive_start", "drive_end", "break", "fuel", "pickup", "dropoff", "rest"]
 
