@@ -100,71 +100,75 @@ export function TripForm({ onSubmit, isPending }: TripFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-3">
-      {/* Route fields grouped card */}
+    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-3 pt-2">
+      {/* Route fields — separate cards so suggestion dropdown can overflow */}
       <div
-        className="rounded-2xl border overflow-hidden"
+        className="rounded-2xl border px-5 py-6"
         style={{
           borderColor: "var(--border-bright)",
           background: "var(--bg-elevated)",
         }}
       >
-        <div
-          className="px-5 py-6 border-b"
-          style={{ borderColor: "var(--border)" }}
-        >
-          <FieldLabel color="var(--cyan)">Current location</FieldLabel>
-          <Controller
-            control={control}
-            name="current_location"
-            render={({ field }) => (
-              <AddressInput
-                value={field.value}
-                onChange={field.onChange}
-                onBlur={field.onBlur}
-                placeholder={t("form.currentLocation.placeholder")}
-                error={errMsg(errors.current_location?.message)}
-              />
-            )}
-          />
-        </div>
+        <FieldLabel color="var(--cyan)">Current location</FieldLabel>
+        <Controller
+          control={control}
+          name="current_location"
+          render={({ field }) => (
+            <AddressInput
+              value={field.value}
+              onChange={field.onChange}
+              onBlur={field.onBlur}
+              placeholder={t("form.currentLocation.placeholder")}
+              error={errMsg(errors.current_location?.message)}
+            />
+          )}
+        />
+      </div>
 
-        <div
-          className="px-5 py-6 border-b"
-          style={{ borderColor: "var(--border)" }}
-        >
-          <FieldLabel color="var(--amber)">Pickup location</FieldLabel>
-          <Controller
-            control={control}
-            name="pickup_location"
-            render={({ field }) => (
-              <AddressInput
-                value={field.value}
-                onChange={field.onChange}
-                onBlur={field.onBlur}
-                placeholder={t("form.pickupLocation.placeholder")}
-                error={errMsg(errors.pickup_location?.message)}
-              />
-            )}
-          />
-        </div>
+      <div
+        className="rounded-2xl border px-5 py-6"
+        style={{
+          borderColor: "var(--border-bright)",
+          background: "var(--bg-elevated)",
+        }}
+      >
+        <FieldLabel color="var(--amber)">Pickup location</FieldLabel>
+        <Controller
+          control={control}
+          name="pickup_location"
+          render={({ field }) => (
+            <AddressInput
+              value={field.value}
+              onChange={field.onChange}
+              onBlur={field.onBlur}
+              placeholder={t("form.pickupLocation.placeholder")}
+              error={errMsg(errors.pickup_location?.message)}
+            />
+          )}
+        />
+      </div>
 
-        <div className="px-5 py-6">
-          <FieldLabel color="var(--green)">Dropoff location</FieldLabel>
-          <Controller
-            control={control}
-            name="dropoff_location"
-            render={({ field }) => (
-              <AddressInput
-                value={field.value}
-                onChange={field.onChange}
-                onBlur={field.onBlur}
-                placeholder={t("form.dropoffLocation.placeholder")}
-                error={errMsg(errors.dropoff_location?.message)}
-              />
-            )}
-          />
-        </div>
+      <div
+        className="rounded-2xl border px-5 py-6"
+        style={{
+          borderColor: "var(--border-bright)",
+          background: "var(--bg-elevated)",
+        }}
+      >
+        <FieldLabel color="var(--green)">Dropoff location</FieldLabel>
+        <Controller
+          control={control}
+          name="dropoff_location"
+          render={({ field }) => (
+            <AddressInput
+              value={field.value}
+              onChange={field.onChange}
+              onBlur={field.onBlur}
+              placeholder={t("form.dropoffLocation.placeholder")}
+              error={errMsg(errors.dropoff_location?.message)}
+            />
+          )}
+        />
       </div>
 
       {/* Cycle + Departure */}

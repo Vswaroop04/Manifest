@@ -93,7 +93,7 @@ export function AddressInput({
 
       {open && (
         <ul
-          className="absolute z-50 w-full mt-1 rounded-lg border border-[var(--border-bright)] overflow-hidden shadow-xl"
+          className="absolute z-[100] w-full mt-1 rounded-lg border border-[var(--border-bright)] overflow-hidden shadow-2xl"
           style={{ background: "var(--bg-elevated)" }}
         >
           {suggestions.map((s, i) => (
