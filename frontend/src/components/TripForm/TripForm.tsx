@@ -1,9 +1,8 @@
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Loader2, Navigation, Package, PackageCheck, Clock, Timer } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { AddressInput } from "./AddressInput";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -16,10 +15,7 @@ const schema = z.object({
     .number({ invalid_type_error: "form.errors.cycleHoursRequired" })
     .min(0, "form.errors.cycleHoursMin")
     .max(70, "form.errors.cycleHoursMax"),
-  departure_time: z.string().refine((v) => {
-    if (!v) return false;
-    return new Date(v) > new Date();
-  }, "form.errors.departurePast"),
+  departure_time: z.string().refine((v) => !!v && new Date(v) > new Date(), "form.errors.departurePast"),
 });
 
 export type TripFormValues = z.infer<typeof schema>;
@@ -35,15 +31,22 @@ function defaultDeparture(): string {
   return d.toISOString().slice(0, 16);
 }
 
+function FieldLabel({ children, accent }: { children: React.ReactNode; accent?: string }) {
+  return (
+    <p
+      className="text-[11px] font-semibold uppercase tracking-[0.08em] mb-1"
+      style={{ color: accent ?? "var(--text-secondary)" }}
+    >
+      {children}
+    </p>
+  );
+}
+
 function FieldError({ message }: { message?: string }) {
   const { t } = useTranslation();
   if (!message) return null;
-  const translated = message.startsWith("form.errors.") ? t(message) : message;
-  return (
-    <p className="mt-1 text-xs" style={{ color: "var(--red)" }}>
-      {translated}
-    </p>
-  );
+  const text = message.startsWith("form.errors.") ? t(message) : message;
+  return <p className="text-[11px] mt-1" style={{ color: "var(--red)" }}>{text}</p>;
 }
 
 export function TripForm({ onSubmit, isPending }: TripFormProps) {
@@ -64,141 +67,134 @@ export function TripForm({ onSubmit, isPending }: TripFormProps) {
     },
   });
 
+  function errMsg(msg?: string) {
+    if (!msg) return undefined;
+    return msg.startsWith("form.errors.") ? t(msg) : msg;
+  }
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
+    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+
+      {/* Route fields */}
       <div
-        className="rounded-xl border p-5 flex flex-col gap-5"
+        className="rounded-xl border overflow-hidden"
         style={{ borderColor: "var(--border)", background: "var(--bg-card)" }}
       >
+        {/* Current location */}
         <div
-          className="text-xs font-medium uppercase tracking-widest pb-2 border-b"
-          style={{ color: "var(--text-dim)", borderColor: "var(--border)" }}
+          className="px-4 pt-4 pb-3 border-b"
+          style={{ borderColor: "var(--border)" }}
         >
-          {t("form.title")}
-        </div>
-
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="current_location" className="flex items-center gap-1.5">
-            <Navigation size={11} style={{ color: "var(--cyan)" }} />
-            {t("form.currentLocation.label")}
-          </Label>
+          <FieldLabel accent="var(--cyan)">Current location</FieldLabel>
           <Controller
             control={control}
             name="current_location"
             render={({ field }) => (
               <AddressInput
-                id="current_location"
                 value={field.value}
                 onChange={field.onChange}
                 onBlur={field.onBlur}
                 placeholder={t("form.currentLocation.placeholder")}
-                error={errors.current_location?.message
-                  ? (errors.current_location.message.startsWith("form.errors.")
-                    ? t(errors.current_location.message)
-                    : errors.current_location.message)
-                  : undefined}
+                error={errMsg(errors.current_location?.message)}
               />
             )}
           />
         </div>
 
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="pickup_location" className="flex items-center gap-1.5">
-            <Package size={11} style={{ color: "var(--amber)" }} />
-            {t("form.pickupLocation.label")}
-          </Label>
+        {/* Pickup */}
+        <div
+          className="px-4 pt-3 pb-3 border-b"
+          style={{ borderColor: "var(--border)" }}
+        >
+          <FieldLabel accent="var(--amber)">Pickup location</FieldLabel>
           <Controller
             control={control}
             name="pickup_location"
             render={({ field }) => (
               <AddressInput
-                id="pickup_location"
                 value={field.value}
                 onChange={field.onChange}
                 onBlur={field.onBlur}
                 placeholder={t("form.pickupLocation.placeholder")}
-                error={errors.pickup_location?.message
-                  ? (errors.pickup_location.message.startsWith("form.errors.")
-                    ? t(errors.pickup_location.message)
-                    : errors.pickup_location.message)
-                  : undefined}
+                error={errMsg(errors.pickup_location?.message)}
               />
             )}
           />
         </div>
 
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="dropoff_location" className="flex items-center gap-1.5">
-            <PackageCheck size={11} style={{ color: "var(--green)" }} />
-            {t("form.dropoffLocation.label")}
-          </Label>
+        {/* Dropoff */}
+        <div className="px-4 pt-3 pb-4">
+          <FieldLabel accent="var(--green)">Dropoff location</FieldLabel>
           <Controller
             control={control}
             name="dropoff_location"
             render={({ field }) => (
               <AddressInput
-                id="dropoff_location"
                 value={field.value}
                 onChange={field.onChange}
                 onBlur={field.onBlur}
                 placeholder={t("form.dropoffLocation.placeholder")}
-                error={errors.dropoff_location?.message
-                  ? (errors.dropoff_location.message.startsWith("form.errors.")
-                    ? t(errors.dropoff_location.message)
-                    : errors.dropoff_location.message)
-                  : undefined}
+                error={errMsg(errors.dropoff_location?.message)}
               />
             )}
           />
         </div>
+      </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="cycle_hours_used" className="flex items-center gap-1.5">
-              <Timer size={11} style={{ color: "var(--orange)" }} />
-              {t("form.cycleHours.label")}
-            </Label>
-            <Input
-              id="cycle_hours_used"
-              type="number"
-              step="0.5"
-              min={0}
-              max={70}
-              placeholder={t("form.cycleHours.placeholder")}
-              {...register("cycle_hours_used", { valueAsNumber: true })}
-              className={errors.cycle_hours_used ? "border-[var(--red)]" : ""}
-            />
-            <p className="text-xs" style={{ color: "var(--text-dim)" }}>
-              {t("form.cycleHours.hint")}
-            </p>
-            <FieldError message={errors.cycle_hours_used?.message} />
-          </div>
+      {/* Cycle + Departure row */}
+      <div className="grid grid-cols-2 gap-3">
+        <div
+          className="rounded-xl border px-4 pt-3 pb-4"
+          style={{ borderColor: "var(--border)", background: "var(--bg-card)" }}
+        >
+          <FieldLabel accent="var(--orange)">Cycle used</FieldLabel>
+          <Input
+            type="number"
+            step="0.5"
+            min={0}
+            max={70}
+            placeholder="0 – 70"
+            {...register("cycle_hours_used", { valueAsNumber: true })}
+            className={errors.cycle_hours_used ? "border-[var(--red)]" : ""}
+            style={{ fontFamily: "var(--font-mono)" }}
+          />
+          <p className="text-[10px] mt-1.5" style={{ color: "var(--text-dim)" }}>
+            hrs · 70-hr cycle
+          </p>
+          <FieldError message={errors.cycle_hours_used?.message} />
+        </div>
 
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="departure_time" className="flex items-center gap-1.5">
-              <Clock size={11} style={{ color: "var(--cyan)" }} />
-              {t("form.departureTime.label")}
-            </Label>
-            <Input
-              id="departure_time"
-              type="datetime-local"
-              {...register("departure_time")}
-              className={errors.departure_time ? "border-[var(--red)]" : ""}
-              style={{
-                colorScheme: "dark",
-                fontFamily: "var(--font-mono)",
-                fontSize: "0.75rem",
-              }}
-            />
-            <FieldError message={errors.departure_time?.message} />
-          </div>
+        <div
+          className="rounded-xl border px-4 pt-3 pb-4"
+          style={{ borderColor: "var(--border)", background: "var(--bg-card)" }}
+        >
+          <FieldLabel accent="var(--cyan)">Departure</FieldLabel>
+          <Input
+            type="datetime-local"
+            {...register("departure_time")}
+            className={errors.departure_time ? "border-[var(--red)]" : ""}
+            style={{
+              colorScheme: "dark",
+              fontFamily: "var(--font-mono)",
+              fontSize: "0.7rem",
+              paddingLeft: "8px",
+              paddingRight: "4px",
+            }}
+          />
+          <FieldError message={errors.departure_time?.message} />
         </div>
       </div>
 
-      <Button type="submit" size="lg" disabled={isPending} className="w-full font-semibold tracking-wide">
+      <Button
+        type="submit"
+        size="lg"
+        disabled={isPending}
+        className="w-full font-semibold tracking-wide"
+        style={{ fontFamily: "var(--font-display)", fontSize: "1rem", letterSpacing: "0.1em" }}
+      >
         {isPending ? (
           <>
-            <Loader2 size={16} className="animate-spin" />
+            <Loader2 size={15} className="animate-spin" />
             {t("form.submitting")}
           </>
         ) : (

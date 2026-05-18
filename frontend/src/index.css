@@ -1,5 +1,5 @@
-@import "tailwindcss";
 @import url("https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap");
+@import "tailwindcss";
 
 :root {
   --bg: #060710;
@@ -16,6 +16,7 @@
 
   --orange: #ff5722;
   --orange-dim: rgba(255, 87, 34, 0.12);
+  --cyan-dim: rgba(0, 229, 255, 0.1);
 
   --cyan: #00e5ff;
   --green: #00ff87;
