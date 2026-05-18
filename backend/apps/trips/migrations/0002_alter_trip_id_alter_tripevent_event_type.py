@@ -5,20 +5,36 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('trips', '0001_initial'),
+        ("trips", "0001_initial"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='trip',
-            name='id',
-            field=models.UUIDField(default=uuid_utils._uuid_utils.uuid7, editable=False, primary_key=True, serialize=False),
+            model_name="trip",
+            name="id",
+            field=models.UUIDField(
+                default=uuid_utils._uuid_utils.uuid7,
+                editable=False,
+                primary_key=True,
+                serialize=False,
+            ),
         ),
         migrations.AlterField(
-            model_name='tripevent',
-            name='event_type',
-            field=models.CharField(choices=[('drive_start', 'Drive Start'), ('drive_end', 'Drive End'), ('break', 'Break'), ('fuel', 'Fuel Stop'), ('pickup', 'Pickup'), ('dropoff', 'Dropoff'), ('rest', 'Rest'), ('off_duty', 'Off Duty')], max_length=20),
+            model_name="tripevent",
+            name="event_type",
+            field=models.CharField(
+                choices=[
+                    ("drive_start", "Drive Start"),
+                    ("drive_end", "Drive End"),
+                    ("break", "Break"),
+                    ("fuel", "Fuel Stop"),
+                    ("pickup", "Pickup"),
+                    ("dropoff", "Dropoff"),
+                    ("rest", "Rest"),
+                    ("off_duty", "Off Duty"),
+                ],
+                max_length=20,
+            ),
         ),
     ]
