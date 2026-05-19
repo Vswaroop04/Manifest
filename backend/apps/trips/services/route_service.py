@@ -26,7 +26,7 @@ def get_route(waypoints: list[tuple[float, float]]) -> RouteResult:
     except RoutingError as exc:
         logger.warning(
             "ORS routing failed, falling back to OSRM — truck restrictions not applied",
-            extra={"error": str(exc)},
+            extra={"reason": str(exc)},
         )
         return _osrm_route(waypoints)
 
