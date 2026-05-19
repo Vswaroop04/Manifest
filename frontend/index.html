@@ -1,36 +1,42 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="ELD Trip Planner — HOS-compliant route planning for truck drivers" />
-    <meta name="theme-color" content="#060710" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <title>MANIFEST — ELD Trip Planner</title>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta
+            name="description"
+            content="ELD Trip Planner — HOS-compliant route planning for truck drivers"
+        />
+        <meta name="theme-color" content="#060710" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <title>Manifest - Spotter Labs - ELD Trip Planner</title>
 
-    <!-- Preconnect to font origins so DNS + TLS happens before the font CSS request -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <!-- Preconnect to font origins so DNS + TLS happens before the font CSS request -->
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
-    <!-- Load Google Fonts asynchronously (non-render-blocking) -->
-    <link
-      rel="preload"
-      as="style"
-      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
-      onload="this.onload=null;this.rel='stylesheet'"
-    />
-    <noscript>
-      <link
-        rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
-      />
-    </noscript>
+        <!-- Load Google Fonts asynchronously (non-render-blocking) -->
+        <link
+            rel="preload"
+            as="style"
+            href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+            onload="
+                this.onload = null;
+                this.rel = 'stylesheet';
+            "
+        />
+        <noscript>
+            <link
+                rel="stylesheet"
+                href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+            />
+        </noscript>
 
-    <!-- DNS prefetch for OpenStreetMap tiles loaded by Leaflet -->
-    <link rel="dns-prefetch" href="https://tile.openstreetmap.org" />
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+        <!-- DNS prefetch for OpenStreetMap tiles loaded by Leaflet -->
+        <link rel="dns-prefetch" href="https://tile.openstreetmap.org" />
+    </head>
+    <body>
+        <div id="root"></div>
+        <script type="module" src="/src/main.tsx"></script>
+    </body>
 </html>
