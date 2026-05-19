@@ -1,4 +1,5 @@
 import logging
+import time
 
 from django.shortcuts import get_object_or_404
 from rest_framework import status
@@ -19,6 +20,11 @@ from apps.trips.services.geocoding import make_geocoder
 from apps.trips.services.trip_planner import plan, save
 
 logger = logging.getLogger("app")
+
+
+@api_view(["GET"])
+def health(request: Request) -> Response:
+    return Response({"status": "ok"})
 
 
 @api_view(["POST"])
