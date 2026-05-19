@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { API_BASE } from "@/services/api";
 
 type WakeupStatus = "pending" | "up" | "error";
 
@@ -15,7 +16,7 @@ export function useBackendWakeup() {
       if (!cancelled) setSlow(true);
     }, 800);
 
-    fetch("/api/health/")
+    fetch(`${API_BASE}/api/health/`)
       .then((r) => (r.ok ? "up" : "error") as WakeupStatus)
       .catch(() => "error" as WakeupStatus)
       .then((result) => {

@@ -1,3 +1,5 @@
+export const API_BASE = (import.meta.env.VITE_API_BASE_URL as string | undefined ?? "").replace(/\/$/, "");
+
 export interface TripPlanRequest {
   current_location: string;
   pickup_location: string;
@@ -108,20 +110,20 @@ function sessionHeaders(): Record<string, string> {
 }
 
 export async function getTripList(): Promise<TripSummaryItem[]> {
-  const res = await fetch("/api/trips/", { headers: sessionHeaders() });
+  const res = await fetch(`${API_BASE}/api/trips/`, { headers: sessionHeaders() });
   if (!res.ok) throw new Error(`API error ${res.status}`);
   return res.json() as Promise<TripSummaryItem[]>;
 }
 
 export async function getTripDetail(id: string): Promise<TripPlanResponse> {
-  const res = await fetch(`/api/trips/${id}/`, { headers: sessionHeaders() });
+  const res = await fetch(`${API_BASE}/api/trips/${id}/`, { headers: sessionHeaders() });
   if (!res.ok) throw new Error(`API error ${res.status}`);
   const raw = await res.json() as Parameters<typeof parseResponse>[0];
   return parseResponse(raw);
 }
 
 export async function planTrip(req: TripPlanRequest): Promise<TripPlanResponse> {
-  const res = await fetch("/api/trips/plan/", {
+  const res = await fetch(`${API_BASE}/api/trips/plan/`, {
     method: "POST",
     headers: { "Content-Type": "application/json", ...sessionHeaders() },
     body: JSON.stringify(req),

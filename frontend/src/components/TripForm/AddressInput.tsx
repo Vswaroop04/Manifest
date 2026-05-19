@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { MapPin, Loader2, SearchX } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { API_BASE } from "@/services/api";
 
 interface Suggestion {
   label: string;
@@ -17,7 +18,7 @@ interface AddressInputProps {
 }
 
 async function fetchSuggestions(q: string): Promise<Suggestion[]> {
-  const res = await fetch(`/api/geocode/?q=${encodeURIComponent(q)}`);
+  const res = await fetch(`${API_BASE}/api/geocode/?q=${encodeURIComponent(q)}`);
   if (!res.ok) throw new Error("geocode failed");
   return (await res.json()) as Suggestion[];
 }
