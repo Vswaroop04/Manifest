@@ -19,6 +19,12 @@ class Geocoder(ABC):
     def geocode(self, query: str) -> Optional[tuple[float, float]]: ...
 
 
+# HOS (FMCSA Part 395) only applies to US-domiciled drivers — geocoding
+# is restricted to US so users can't pick foreign addresses we can't plan for.
+US_BBOX = "-125.0,24.0,-66.0,49.5"  # continental US lng/lat box for Photon
+US_COUNTRYCODES = "us"  # Nominatim ISO country filter
+
+
 class PhotonGeocoder(Geocoder):
     name = "photon"
 
@@ -26,12 +32,16 @@ class PhotonGeocoder(Geocoder):
         try:
             resp = requests.get(
                 settings.PHOTON_URL,
-                params={"q": query, "limit": 5},
+                params={"q": query, "limit": 5, "bbox": US_BBOX},
                 headers=HTTP_HEADERS,
                 timeout=HTTP_TIMEOUT,
             )
             resp.raise_for_status()
-            features = resp.json().get("features", [])
+            features = [
+                f
+                for f in resp.json().get("features", [])
+                if f.get("properties", {}).get("countrycode") == "US"
+            ]
             if not features:
                 return None
             coords = features[0]["geometry"]["coordinates"]
@@ -50,7 +60,12 @@ class NominatimGeocoder(Geocoder):
         try:
             resp = requests.get(
                 settings.NOMINATIM_URL,
-                params={"q": query, "format": "json", "limit": 5},
+                params={
+                    "q": query,
+                    "format": "json",
+                    "limit": 5,
+                    "countrycodes": US_COUNTRYCODES,
+                },
                 headers=HTTP_HEADERS,
                 timeout=HTTP_TIMEOUT,
             )
@@ -101,22 +116,21 @@ class MultiServiceGeocoder(Geocoder):
         try:
             resp = requests.get(
                 settings.PHOTON_URL,
-                params={"q": query, "limit": 5},
+                params={"q": query, "limit": 8, "bbox": US_BBOX},
                 headers=HTTP_HEADERS,
                 timeout=HTTP_TIMEOUT,
             )
             resp.raise_for_status()
-            features = resp.json().get("features", [])
+            features = [
+                f
+                for f in resp.json().get("features", [])
+                if f.get("properties", {}).get("countrycode") == "US"
+            ]
             suggestions = []
-            for f in features:
+            for f in features[:5]:
                 props = f.get("properties", {})
                 coords = f["geometry"]["coordinates"]
-                parts = [
-                    props.get("name"),
-                    props.get("city"),
-                    props.get("state"),
-                    props.get("country"),
-                ]
+                parts = [props.get("name"), props.get("city"), props.get("state")]
                 label = ", ".join(p for p in parts if p)
                 suggestions.append(
                     {"label": label, "lat": float(coords[1]), "lng": float(coords[0])}

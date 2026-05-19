@@ -105,8 +105,12 @@ class TripSummarySerializer(serializers.ModelSerializer):
 
 class TripPlanResponseSerializer(serializers.ModelSerializer):
     request_id = serializers.IntegerField(source="request.id")
+    current_location = serializers.CharField(source="request.current_location")
     pickup_location = serializers.CharField(source="request.pickup_location")
     dropoff_location = serializers.CharField(source="request.dropoff_location")
+    cycle_hours_used = serializers.DecimalField(
+        source="request.cycle_hours_used", max_digits=5, decimal_places=2
+    )
     departure_time = serializers.DateTimeField(source="request.departure_time")
     route = RouteSerializer(read_only=True)
     events = TripEventSerializer(many=True, read_only=True)
@@ -118,8 +122,10 @@ class TripPlanResponseSerializer(serializers.ModelSerializer):
             "id",
             "status",
             "request_id",
+            "current_location",
             "pickup_location",
             "dropoff_location",
+            "cycle_hours_used",
             "departure_time",
             "current_coords",
             "pickup_coords",

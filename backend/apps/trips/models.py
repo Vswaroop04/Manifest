@@ -1,6 +1,11 @@
+import uuid
 import uuid_utils
 from django.db import models
 from model_utils.models import TimeStampedModel
+
+
+def _uuid7() -> uuid.UUID:
+    return uuid.UUID(str(uuid_utils.uuid7()))
 
 
 class TripStatus(models.TextChoices):
@@ -36,7 +41,7 @@ class TripRequest(TimeStampedModel):
 
 
 class Trip(TimeStampedModel):
-    id = models.UUIDField(primary_key=True, default=uuid_utils.uuid7, editable=False)
+    id = models.UUIDField(primary_key=True, default=_uuid7, editable=False)
     request = models.OneToOneField(
         TripRequest, on_delete=models.CASCADE, related_name="trip"
     )
