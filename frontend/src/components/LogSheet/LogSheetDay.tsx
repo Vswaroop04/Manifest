@@ -38,7 +38,18 @@ function segmentFill(status: string): string {
     case "driving":    return "var(--green)";
     case "on_duty_nd": return "var(--amber)";
     case "sleeper":    return "var(--cyan)";
-    default:           return "#2a3060";
+    case "off_duty":   return "#4a5280";
+    default:           return "#4a5280";
+  }
+}
+
+function segmentOpacity(status: string): number {
+  switch (status) {
+    case "driving":    return 0.85;
+    case "on_duty_nd": return 0.85;
+    case "sleeper":    return 0.75;
+    case "off_duty":   return 0.45;
+    default:           return 0.45;
   }
 }
 
@@ -88,7 +99,8 @@ export function LogSheetDay({ log }: Props) {
         <div className="flex items-center gap-4 text-xs" style={{ fontFamily: "var(--font-mono)", color: "var(--text-secondary)" }}>
           <span style={{ color: "var(--green)" }}>▸ {formatDecimal(log.total_driving)}</span>
           <span style={{ color: "var(--amber)" }}>◈ {formatDecimal(log.total_on_duty_nd)}</span>
-          <span style={{ color: "var(--text-dim)" }}>○ {formatDecimal(log.total_off_duty)}</span>
+          <span style={{ color: "var(--cyan)" }}>◗ {formatDecimal(log.total_sleeper)}</span>
+          <span style={{ color: "#4a5280" }}>○ {formatDecimal(log.total_off_duty)}</span>
           <span
             className="px-2 py-0.5 rounded"
             style={{ background: "var(--bg-elevated)", color: "var(--text-secondary)" }}
@@ -212,7 +224,7 @@ export function LogSheetDay({ log }: Props) {
                 height={BAR_H - 8}
                 fill={segmentFill(seg.status)}
                 rx={2}
-                opacity={seg.status === "off_duty" ? 0 : 0.85}
+                opacity={segmentOpacity(seg.status)}
               />
             );
           })}
