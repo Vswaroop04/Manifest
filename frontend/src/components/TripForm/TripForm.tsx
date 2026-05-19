@@ -269,7 +269,7 @@ export function TripForm({ onSubmit, isPending, initialValues }: TripFormProps) 
         pickup_location: initialValues.pickup_location,
         dropoff_location: initialValues.dropoff_location,
         cycle_hours_used: initialValues.cycle_hours_used,
-        departure_time: toLocalDateTimeString(new Date(initialValues.departure_time)),
+        departure_time: initialValues.departure_time.slice(0, 16),
       });
     } else {
       reset({

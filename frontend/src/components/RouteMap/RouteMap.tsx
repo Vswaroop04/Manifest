@@ -32,10 +32,17 @@ const EVENT_COLORS: Record<string, string> = {
   off_duty: "#2a3060",
 };
 
-function formatTime(iso: string): string {
-  return new Date(iso).toLocaleTimeString("en-US", {
-    hour: "numeric", minute: "2-digit", hour12: true,
-  });
+function formatDateTime(iso: string): { date: string; time: string } {
+  const d = new Date(iso);
+  return {
+    date: d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", timeZone: "UTC" }),
+    time: d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true, timeZone: "UTC" }),
+  };
+}
+
+function sameDay(a: string, b: string): boolean {
+  const toUTCDate = (iso: string) => iso.slice(0, 10); // "YYYY-MM-DD" in UTC
+  return toUTCDate(a) === toUTCDate(b);
 }
 
 function formatDuration(start: string, end: string): string {
@@ -145,22 +152,30 @@ export function RouteMap({ geometry, events, currentCoords, pickupCoords, dropof
             icon={makeIcon(EVENT_COLORS[ev.event_type] ?? "var(--text-secondary)", 10)}
           >
             <Popup>
-              <div style={{ fontFamily: "var(--font-body)", fontSize: "13px", minWidth: "160px" }}>
-                <p style={{ fontWeight: 600, marginBottom: "6px", color: EVENT_COLORS[ev.event_type] ?? "inherit" }}>
-                  {ev.location_label}
+              <div style={{ fontFamily: "var(--font-body)", fontSize: "13px", minWidth: "170px" }}>
+                <p style={{ fontWeight: 600, marginBottom: "8px", color: EVENT_COLORS[ev.event_type] ?? "inherit" }}>
+                  {ev.location_label || ev.event_type.replace("_", " ")}
                 </p>
-                <p style={{ color: "var(--text-secondary)", fontSize: "11px" }}>
-                  Arrive {formatTime(ev.start_time)}
-                </p>
-                <p style={{ color: "var(--text-secondary)", fontSize: "11px" }}>
-                  Depart {formatTime(ev.end_time)}
-                </p>
-                <p style={{ color: "var(--text-secondary)", fontSize: "11px" }}>
-                  Duration {formatDuration(ev.start_time, ev.end_time)}
-                </p>
-                <p style={{ color: "var(--text-dim)", fontSize: "11px" }}>
-                  Mile {ev.mile_marker}
-                </p>
+                {(() => {
+                  const arr = formatDateTime(ev.start_time);
+                  const dep = formatDateTime(ev.end_time);
+                  const crossDay = !sameDay(ev.start_time, ev.end_time);
+                  return (
+                    <>
+                      <p style={{ color: "var(--text-dim)", fontSize: "10px", marginBottom: "1px", textTransform: "uppercase", letterSpacing: "0.04em" }}>Arrives</p>
+                      <p style={{ color: "var(--text-secondary)", fontSize: "12px", marginBottom: "6px" }}>
+                        {arr.date} · {arr.time}
+                      </p>
+                      <p style={{ color: "var(--text-dim)", fontSize: "10px", marginBottom: "1px", textTransform: "uppercase", letterSpacing: "0.04em" }}>Departs</p>
+                      <p style={{ color: "var(--text-secondary)", fontSize: "12px", marginBottom: "6px" }}>
+                        {crossDay ? `${dep.date} · ` : ""}{dep.time}
+                      </p>
+                      <p style={{ color: "var(--text-dim)", fontSize: "11px" }}>
+                        {formatDuration(ev.start_time, ev.end_time)} stop · mi {ev.mile_marker}
+                      </p>
+                    </>
+                  );
+                })()}
               </div>
             </Popup>
           </Marker>
