@@ -19,6 +19,16 @@ const TIME_OPTIONS: { label: string; value: string }[] = Array.from({ length: 48
   };
 });
 
+function nearestHalfHour(hhmm: string): string {
+  const [h, m] = hhmm.split(":").map(Number);
+  const totalMin = h * 60 + m;
+  return TIME_OPTIONS.reduce((best, opt) => {
+    const [bh, bm] = best.value.split(":").map(Number);
+    const [oh, om] = opt.value.split(":").map(Number);
+    return Math.abs(oh * 60 + om - totalMin) < Math.abs(bh * 60 + bm - totalMin) ? opt : best;
+  }).value;
+}
+
 function TimeDropdown({
   value,
   onChange,
@@ -31,7 +41,8 @@ function TimeDropdown({
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
-  const selected = TIME_OPTIONS.find((o) => o.value === value) ?? TIME_OPTIONS[16];
+  const snapped = nearestHalfHour(value);
+  const selected = TIME_OPTIONS.find((o) => o.value === snapped) ?? TIME_OPTIONS[0];
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -45,11 +56,11 @@ function TimeDropdown({
 
   useEffect(() => {
     if (open && listRef.current) {
-      const idx = TIME_OPTIONS.findIndex((o) => o.value === value);
+      const idx = TIME_OPTIONS.findIndex((o) => o.value === snapped);
       const item = listRef.current.children[idx] as HTMLElement | undefined;
       item?.scrollIntoView({ block: "nearest" });
     }
-  }, [open, value]);
+  }, [open, snapped]);
 
   return (
     <div ref={containerRef} className="relative" style={{ minWidth: 130 }}>
@@ -87,7 +98,7 @@ function TimeDropdown({
           style={{ background: "var(--bg-elevated)", maxHeight: 220 }}
         >
           {TIME_OPTIONS.map((o) => {
-            const isSelected = o.value === value;
+            const isSelected = o.value === snapped;
             return (
               <li
                 key={o.value}
@@ -204,7 +215,14 @@ function toLocalDateTimeString(d: Date): string {
 
 function defaultDeparture(): string {
   const d = new Date(Date.now() + 60 * 60 * 1000);
-  d.setSeconds(0, 0);
+  const m = d.getMinutes();
+  if (m === 0 || m === 30) {
+    d.setSeconds(0, 0);
+  } else if (m < 30) {
+    d.setMinutes(30, 0, 0);
+  } else {
+    d.setHours(d.getHours() + 1, 0, 0, 0);
+  }
   return toLocalDateTimeString(d);
 }
 
@@ -264,12 +282,15 @@ export function TripForm({ onSubmit, isPending, initialValues }: TripFormProps) 
 
   useEffect(() => {
     if (initialValues) {
+      const raw = initialValues.departure_time.slice(0, 16); // "2026-05-20T23:18"
+      const [dp, tp = "08:00"] = raw.split("T");
+      const snappedTime = nearestHalfHour(tp.slice(0, 5));
       reset({
         current_location: initialValues.current_location,
         pickup_location: initialValues.pickup_location,
         dropoff_location: initialValues.dropoff_location,
         cycle_hours_used: initialValues.cycle_hours_used,
-        departure_time: initialValues.departure_time.slice(0, 16),
+        departure_time: `${dp}T${snappedTime}`,
       });
     } else {
       reset({

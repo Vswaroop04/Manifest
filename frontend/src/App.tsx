@@ -8,6 +8,7 @@ import { LogSheet } from "@/components/LogSheet/LogSheet";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useBackendWakeup } from "@/hooks/useBackendWakeup";
 import { useTripStore } from "@/store/tripStore";
 import { planTrip, getTripDetail, type TripPlanResponse } from "@/services/api";
 
@@ -17,6 +18,7 @@ const RouteMap = lazy(() =>
 
 export default function App() {
   const { t } = useTranslation();
+  const { isWakingUp } = useBackendWakeup();
   const { activeTab, setActiveTab } = useTripStore();
   const queryClient = useQueryClient();
   const [result, setResult] = useState<TripPlanResponse | null>(null);
@@ -125,7 +127,24 @@ export default function App() {
           </div>
         </div>
 
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-3">
+          {isWakingUp && (
+            <div
+              className="flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-medium"
+              style={{
+                background: "rgba(255,171,0,0.1)",
+                border: "1px solid rgba(255,171,0,0.25)",
+                color: "var(--amber, #ffab00)",
+              }}
+            >
+              <span
+                className="block w-1.5 h-1.5 rounded-full animate-pulse"
+                style={{ background: "var(--amber, #ffab00)" }}
+              />
+              Warming up backend…
+            </div>
+          )}
+          <div className="flex items-center gap-1">
           {result && (
             <Button
               variant="ghost"
@@ -152,6 +171,7 @@ export default function App() {
             <History size={13} />
             History
           </Button>
+          </div>
         </div>
       </header>
 
