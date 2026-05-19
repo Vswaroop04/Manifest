@@ -164,6 +164,24 @@ def _append_drive_end(
     state.current_mile += miles
 
 
+def _strip_zero_drives(events: list[TripEventData]) -> list[TripEventData]:
+    out: list[TripEventData] = []
+    i = 0
+    while i < len(events):
+        ev = events[i]
+        if (
+            ev.event_type == "drive_start"
+            and i + 1 < len(events)
+            and events[i + 1].event_type == "drive_end"
+            and events[i + 1].start_time == ev.start_time
+        ):
+            i += 2  # drop both — zero movement
+        else:
+            out.append(ev)
+            i += 1
+    return out
+
+
 def _day_start(dt: datetime) -> datetime:
     return dt.replace(hour=0, minute=0, second=0, microsecond=0)
 
@@ -259,9 +277,15 @@ def calculate(
         if next_stop is not None:
             stop_mile, stop_kind, waypoint = next_stop
             drive_miles = stop_mile - state.current_mile
-            drive_time = timedelta(hours=float(drive_miles / avg_speed))
 
-            _append_drive_end(events, state, drive_time, drive_miles)
+            if drive_miles > Decimal("0"):
+                drive_time = timedelta(hours=float(drive_miles / avg_speed))
+                _append_drive_end(events, state, drive_time, drive_miles)
+            else:
+                # Already at the stop — remove the dangling drive_start
+                if events and events[-1].event_type == "drive_start":
+                    events.pop()
+                state.current_mile = stop_mile
 
             # Check if break is due before processing stop
             if state.drive_for_break >= _BREAK_TRIGGER:
@@ -282,6 +306,7 @@ def calculate(
                 )
         else:
             # A HOS rule fires — drive to the limit then stop
+            merged_rest = False
             if max_drive_miles > Decimal("0"):
                 drive_time = timedelta(hours=float(max_drive_miles / avg_speed))
                 _append_drive_end(events, state, drive_time, max_drive_miles)
@@ -290,25 +315,52 @@ def calculate(
                 # phantom drive_start emitted at the tail of the last iteration
                 if events and events[-1].event_type == "drive_start":
                     events.pop()
+                # If we're immediately on top of a previous rest (cycle exhausted
+                # right after an 11hr/14hr rest), absorb the 70hr reset into that
+                # rest rather than emitting two back-to-back rest blocks.
+                if events and events[-1].event_type == "rest":
+                    prev = events[-1]
+                    prior_trigger = prev.metadata.get("trigger", "")
+                    new_end = prev.end_time + _REST_DURATION
+                    events[-1] = TripEventData(
+                        event_type="rest",
+                        start_time=prev.start_time,
+                        end_time=new_end,
+                        location_label=prev.location_label,
+                        coords=prev.coords,
+                        mile_marker=prev.mile_marker,
+                        metadata={
+                            "trigger": [prior_trigger, "70hr_cycle"]
+                            if isinstance(prior_trigger, str)
+                            else list(prior_trigger) + ["70hr_cycle"]
+                        },
+                    )
+                    state.current_time = new_end
+                    state.shift_start = new_end
+                    state.drive_in_shift = timedelta()
+                    state.drive_for_break = timedelta()
+                    state.cycle_hrs = Decimal("0")
+                    merged_rest = True
 
             if state.current_mile >= total_miles:
                 break
 
-            window_elapsed = state.current_time - state.shift_start
+            if not merged_rest:
+                window_elapsed = state.current_time - state.shift_start
 
-            if (
-                state.drive_for_break >= _BREAK_TRIGGER
-                and state.drive_in_shift < _DRIVE_LIMIT
-                and window_elapsed < _WINDOW_LIMIT
-            ):
-                _append_break(events, state)
-            elif state.drive_in_shift >= _DRIVE_LIMIT:
-                _append_rest(events, state, "11hr_limit")
-            elif window_elapsed >= _WINDOW_LIMIT:
-                _append_rest(events, state, "14hr_window")
-            else:
-                # Cycle limit
-                _append_rest(events, state, "70hr_cycle")
+                if (
+                    state.drive_for_break >= _BREAK_TRIGGER
+                    and state.drive_in_shift < _DRIVE_LIMIT
+                    and window_elapsed < _WINDOW_LIMIT
+                ):
+                    _append_break(events, state)
+                elif state.drive_in_shift >= _DRIVE_LIMIT:
+                    _append_rest(events, state, "11hr_limit")
+                elif window_elapsed >= _WINDOW_LIMIT:
+                    _append_rest(events, state, "14hr_window")
+                else:
+                    # Cycle limit
+                    _append_rest(events, state, "70hr_cycle")
 
             if state.current_mile < total_miles:
                 events.append(
@@ -338,4 +390,4 @@ def calculate(
             )
         )
 
-    return events
+    return _strip_zero_drives(events)

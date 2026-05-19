@@ -58,14 +58,14 @@ def _add_span(
     cur = start_dt
     while cur.date() <= end_dt.date():
         origin = cur.replace(hour=0, minute=0, second=0, microsecond=0)
-        day_boundary = origin.replace(hour=23, minute=59, second=59, microsecond=0)
+        next_midnight = origin + timedelta(days=1)
         seg_start = cur
-        seg_end = min(end_dt, day_boundary)
+        seg_end = min(end_dt, next_midnight)
         if seg_end > seg_start:
             s = int((seg_start - origin).total_seconds() // 60)
             e = min(int((seg_end - origin).total_seconds() // 60), 1440)
             day_map.setdefault(cur.date(), []).append((status, s, e))
-        cur = origin + timedelta(days=1)
+        cur = next_midnight
 
 
 def build(events: list[TripEventData]) -> list[DayLogData]:
