@@ -42,6 +42,7 @@ class TripRequest(TimeStampedModel):
 
 class Trip(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=_uuid7, editable=False)
+    session_token = models.UUIDField(db_index=True, null=True, blank=True)
     request = models.OneToOneField(
         TripRequest, on_delete=models.CASCADE, related_name="trip"
     )
