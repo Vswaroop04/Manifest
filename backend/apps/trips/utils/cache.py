@@ -13,7 +13,9 @@ def cached_or_calculate(key: str, build: Callable[[], T], ttl: int) -> T:
         if value is not None:
             return value
     except Exception as exc:
-        logger.warning("Cache read failed, skipping cache", extra={"key": key, "error": str(exc)})
+        logger.warning(
+            "Cache read failed, skipping cache", extra={"key": key, "error": str(exc)}
+        )
         return build()
 
     value = build()

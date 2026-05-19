@@ -38,7 +38,9 @@ def plan(
     )
 
     with ThreadPoolExecutor(max_workers=2) as ex:
-        full_future = ex.submit(get_route, [current_coords, pickup_coords, dropoff_coords])
+        full_future = ex.submit(
+            get_route, [current_coords, pickup_coords, dropoff_coords]
+        )
         pickup_segment_future = ex.submit(get_route, [current_coords, pickup_coords])
 
     route = full_future.result()
