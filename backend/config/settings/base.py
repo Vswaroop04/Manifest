@@ -95,6 +95,13 @@ CORS_ALLOWED_ORIGINS: list[str] = os.environ.get(
     "CORS_ALLOWED_ORIGINS", "http://localhost:5173"
 ).split(",")
 
+CORS_ALLOW_HEADERS = [
+    "accept",
+    "content-type",
+    "authorization",
+    "x-session-token",
+]
+
 LANGUAGE_CODE = "en-us"
 TIME_ZONE = "UTC"
 USE_I18N = False
