@@ -93,14 +93,28 @@ function parseResponse(raw: {
   };
 }
 
+function getSessionToken(): string {
+  const key = "manifest_session_token";
+  let token = localStorage.getItem(key);
+  if (!token) {
+    token = crypto.randomUUID();
+    localStorage.setItem(key, token);
+  }
+  return token;
+}
+
+function sessionHeaders(): Record<string, string> {
+  return { "X-Session-Token": getSessionToken() };
+}
+
 export async function getTripList(): Promise<TripSummaryItem[]> {
-  const res = await fetch("/api/trips/");
+  const res = await fetch("/api/trips/", { headers: sessionHeaders() });
   if (!res.ok) throw new Error(`API error ${res.status}`);
   return res.json() as Promise<TripSummaryItem[]>;
 }
 
 export async function getTripDetail(id: string): Promise<TripPlanResponse> {
-  const res = await fetch(`/api/trips/${id}/`);
+  const res = await fetch(`/api/trips/${id}/`, { headers: sessionHeaders() });
   if (!res.ok) throw new Error(`API error ${res.status}`);
   const raw = await res.json() as Parameters<typeof parseResponse>[0];
   return parseResponse(raw);
@@ -109,7 +123,7 @@ export async function getTripDetail(id: string): Promise<TripPlanResponse> {
 export async function planTrip(req: TripPlanRequest): Promise<TripPlanResponse> {
   const res = await fetch("/api/trips/plan/", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...sessionHeaders() },
     body: JSON.stringify(req),
   });
 

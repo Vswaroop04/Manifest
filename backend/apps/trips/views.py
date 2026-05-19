@@ -1,5 +1,5 @@
 import logging
-import time
+import uuid
 
 from django.shortcuts import get_object_or_404
 from rest_framework import status
@@ -22,6 +22,14 @@ from apps.trips.services.trip_planner import plan, save
 logger = logging.getLogger("app")
 
 
+def _session_token(request: Request) -> uuid.UUID | None:
+    raw = request.headers.get("X-Session-Token", "").strip()
+    try:
+        return uuid.UUID(raw)
+    except ValueError:
+        return None
+
+
 @api_view(["GET"])
 def health(request: Request) -> Response:
     return Response({"status": "ok"})
@@ -34,6 +42,7 @@ def plan_trip(request: Request) -> Response:
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     data = serializer.validated_data
+    token = _session_token(request)
 
     try:
         trip_plan = plan(
@@ -57,6 +66,7 @@ def plan_trip(request: Request) -> Response:
         cycle_hours_used=data["cycle_hours_used"],
         departure_time=data["departure_time"],
         trip_plan=trip_plan,
+        session_token=token,
     )
 
     if trip_plan.route.used_fallback:
@@ -81,11 +91,16 @@ def geocode_suggest(request: Request) -> Response:
 
 @api_view(["GET"])
 def trip_detail(request: Request, trip_id: str) -> Response:
+    token = _session_token(request)
+    filters = {"pk": trip_id}
+    if token:
+        filters["session_token"] = token
+
     trip = get_object_or_404(
         Trip.objects.select_related("request", "route").prefetch_related(
             "events", "day_logs"
         ),
-        pk=trip_id,
+        **filters,
     )
     return Response(TripPlanResponseSerializer(trip).data)
 
@@ -96,7 +111,10 @@ def trip_list(request: Request) -> Response:
     if not query_serializer.is_valid():
         return Response(query_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    token = _session_token(request)
     qs = Trip.objects.select_related("request").order_by("-created")
+    if token:
+        qs = qs.filter(session_token=token)
     if status_filter := query_serializer.validated_data.get("status"):
         qs = qs.filter(status=status_filter)
 

@@ -84,6 +84,7 @@ def save(
     cycle_hours_used: Decimal,
     departure_time: datetime,
     trip_plan: TripPlan,
+    session_token: object = None,
 ) -> Trip:
     with transaction.atomic():
         trip_request = TripRequest.objects.create(
@@ -96,6 +97,7 @@ def save(
         trip = Trip.objects.create(
             request=trip_request,
             status="completed",
+            session_token=session_token,
             current_coords=list(trip_plan.current_coords),
             pickup_coords=list(trip_plan.pickup_coords),
             dropoff_coords=list(trip_plan.dropoff_coords),
