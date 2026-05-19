@@ -164,6 +164,12 @@ pyright               # type check
    - `CORS_ALLOWED_ORIGINS` — set to your frontend URL
    - `DATABASE_URL` and `REDIS_URL` are injected automatically by Railway plugins
 5. Set the start command: `gunicorn config.wsgi:application --bind 0.0.0.0:$PORT`
-6. Run migrations via Railway's one-off command: `python manage.py migrate`
+6. Run migrations — two options:
+   - **One-off command** (Railway dashboard → your service → three-dot menu → Run Command): `python manage.py migrate`
+   - **If you can't find the one-off command**, change the start command to run migrate first, then switch it back after the first deploy:
+     ```
+     python manage.py migrate && gunicorn config.wsgi:application --bind 0.0.0.0:$PORT
+     ```
+     This is safe to leave permanently — Django migrations are idempotent and a no-op when nothing has changed.
 
 The app has no static files served by Django (frontend is separate), so no `collectstatic` step is needed.
