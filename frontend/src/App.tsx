@@ -1,88 +1,67 @@
 import { lazy, Suspense, useState } from "react";
-import { Truck, RotateCcw } from "lucide-react";
+import { Truck, RotateCcw, History } from "lucide-react";
 import { TripForm, type TripFormValues } from "@/components/TripForm/TripForm";
 import { TripSummary } from "@/components/TripSummary/TripSummary";
+import { TripHistory } from "@/components/TripHistory/TripHistory";
 import { LogSheet } from "@/components/LogSheet/LogSheet";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useTripStore } from "@/store/tripStore";
+import { planTrip, getTripDetail, type TripPlanResponse } from "@/services/api";
 
 const RouteMap = lazy(() =>
   import("@/components/RouteMap/RouteMap").then((m) => ({ default: m.RouteMap }))
 );
 
-const MOCK_RESULT = {
-  route: {
-    geometry: [
-      [41.8781, -87.6298], [41.82, -89.0], [41.74, -90.3],
-      [41.67, -91.52], [41.59, -93.0], [41.5868, -93.625],
-      [41.55, -94.8], [41.26, -95.9], [40.59, -100.77],
-      [39.9, -103.6], [39.7392, -104.9903],
-    ] as [number, number][],
-    total_miles: 1358.4,
-    total_drive_secs: 88200,
-    used_fallback: false,
-  },
-  current_coords: [41.8781, -87.6298] as [number, number],
-  pickup_coords: [41.5868, -93.625] as [number, number],
-  dropoff_coords: [39.7392, -104.9903] as [number, number],
-  events: [
-    { id: "ev-03", event_type: "break",   start_time: "2026-05-20T13:30:00Z", end_time: "2026-05-20T14:00:00Z", location_label: "Rest Area I-80, IA",  coords: [41.67, -91.52] as [number, number], mile_marker: 302 },
-    { id: "ev-05", event_type: "pickup",  start_time: "2026-05-20T17:30:00Z", end_time: "2026-05-20T18:30:00Z", location_label: "Des Moines, IA",       coords: [41.5868, -93.625] as [number, number], mile_marker: 494 },
-    { id: "ev-07", event_type: "rest",    start_time: "2026-05-20T20:30:00Z", end_time: "2026-05-21T06:30:00Z", location_label: "Council Bluffs, IA",   coords: [41.26, -95.9] as [number, number], mile_marker: 604 },
-    { id: "ev-09", event_type: "fuel",    start_time: "2026-05-21T11:30:00Z", end_time: "2026-05-21T12:00:00Z", location_label: "North Platte, NE",     coords: [40.59, -100.77] as [number, number], mile_marker: 879 },
-    { id: "ev-11", event_type: "dropoff", start_time: "2026-05-21T16:30:00Z", end_time: "2026-05-21T17:30:00Z", location_label: "Denver, CO",           coords: [39.7392, -104.9903] as [number, number], mile_marker: 1358 },
-  ],
-  day_logs: [
-    {
-      day_number: 1, date: "2026-05-20",
-      segments: [
-        { status: "off_duty",   start_min: 0,    end_min: 480  },
-        { status: "driving",    start_min: 480,  end_min: 810  },
-        { status: "off_duty",   start_min: 810,  end_min: 840  },
-        { status: "driving",    start_min: 840,  end_min: 1050 },
-        { status: "on_duty_nd", start_min: 1050, end_min: 1110 },
-        { status: "driving",    start_min: 1110, end_min: 1230 },
-        { status: "off_duty",   start_min: 1230, end_min: 1440 },
-      ],
-      total_driving: "11.00", total_on_duty_nd: "1.00",
-      total_off_duty: "12.00", total_sleeper: "0.00", recap_70hr: "12.00",
-    },
-    {
-      day_number: 2, date: "2026-05-21",
-      segments: [
-        { status: "off_duty",   start_min: 0,   end_min: 390  },
-        { status: "driving",    start_min: 390, end_min: 690  },
-        { status: "on_duty_nd", start_min: 690, end_min: 720  },
-        { status: "driving",    start_min: 720, end_min: 990  },
-        { status: "on_duty_nd", start_min: 990, end_min: 1050 },
-        { status: "off_duty",   start_min: 1050, end_min: 1440 },
-      ],
-      total_driving: "9.50", total_on_duty_nd: "1.50",
-      total_off_duty: "13.00", total_sleeper: "0.00", recap_70hr: "23.50",
-    },
-  ],
-};
-
 export default function App() {
   const { t } = useTranslation();
   const { activeTab, setActiveTab } = useTripStore();
   const [isPending, setIsPending] = useState(false);
-  const [result, setResult] = useState<typeof MOCK_RESULT | null>(null);
+  const [result, setResult] = useState<TripPlanResponse | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [showHistory, setShowHistory] = useState(false);
+  const [loadingHistoryId, setLoadingHistoryId] = useState<string | null>(null);
 
   async function handleSubmit(values: TripFormValues) {
     setIsPending(true);
-    console.log("Trip request:", values);
-    await new Promise((r) => setTimeout(r, 1000));
-    setIsPending(false);
-    setResult(MOCK_RESULT);
+    setError(null);
+    try {
+      const data = await planTrip({
+        current_location: values.current_location,
+        pickup_location: values.pickup_location,
+        dropoff_location: values.dropoff_location,
+        cycle_hours_used: values.cycle_hours_used,
+        // date-only field → send 8am so backend future-time check passes
+        departure_time: values.departure_time,
+      });
+      setResult(data);
+      setActiveTab("map");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong");
+    } finally {
+      setIsPending(false);
+    }
   }
 
-  const cycleAfter =
-    result
-      ? parseFloat(result.day_logs.at(-1)?.recap_70hr ?? "0")
-      : 0;
+  async function loadHistoryTrip(id: string) {
+    setLoadingHistoryId(id);
+    setError(null);
+    try {
+      const data = await getTripDetail(id);
+      setResult(data);
+      setShowHistory(false);
+      setActiveTab("map");
+    } catch {
+      setError("Could not load that trip");
+    } finally {
+      setLoadingHistoryId(null);
+    }
+  }
+
+  const cycleAfter = result
+    ? parseFloat(result.day_logs.at(-1)?.recap_70hr ?? "0")
+    : 0;
 
   return (
     <div className="flex flex-col h-full">
@@ -113,36 +92,76 @@ export default function App() {
           </div>
         </div>
 
-        {result && (
+        <div className="flex items-center gap-1">
+          {result && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => { setResult(null); setError(null); setShowHistory(false); setActiveTab("map"); }}
+              className="gap-1.5 text-xs"
+            >
+              <RotateCcw size={13} />
+              {t("nav.newTrip")}
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => { setResult(null); setActiveTab("map"); }}
+            onClick={() => setShowHistory((p) => !p)}
             className="gap-1.5 text-xs"
+            style={{ color: showHistory ? "var(--orange)" : undefined }}
           >
-            <RotateCcw size={13} />
-            {t("nav.newTrip")}
+            <History size={13} />
+            History
           </Button>
-        )}
+        </div>
       </header>
 
       <div className="flex flex-1 overflow-hidden flex-col md:flex-row">
         <aside
-          className="w-full md:w-[420px] shrink-0 flex flex-col gap-4 px-4 py-5 md:px-6 overflow-y-auto border-b md:border-b-0 md:border-r"
+          className="w-full md:w-[440px] shrink-0 flex flex-col gap-4 px-6 py-5 md:px-7 overflow-y-auto border-b md:border-b-0 md:border-r"
           style={{ borderColor: "var(--border)" }}
         >
-          <TripForm onSubmit={handleSubmit} isPending={isPending} />
-
-          {result && (
+          {showHistory ? (
             <div className="animate-fade-up">
-              <TripSummary
-                totalMiles={result.route.total_miles}
-                totalDriveSecs={result.route.total_drive_secs}
-                totalDays={result.day_logs.length}
-                cycleHoursAfter={cycleAfter}
-                usedFallback={result.route.used_fallback}
-              />
+              <p className="text-[11px] font-semibold tracking-widest uppercase mb-3" style={{ color: "var(--text-dim)" }}>
+                Past Trips
+              </p>
+              <TripHistory onSelect={loadHistoryTrip} loadingId={loadingHistoryId} />
             </div>
+          ) : (
+            <>
+              <TripForm
+                onSubmit={handleSubmit}
+                isPending={isPending}
+                initialValues={result ?? undefined}
+              />
+
+              {error && (
+                <div
+                  className="rounded-xl px-4 py-3 text-sm border animate-fade-up"
+                  style={{
+                    background: "rgba(255,23,68,0.08)",
+                    borderColor: "rgba(255,23,68,0.3)",
+                    color: "var(--red)",
+                  }}
+                >
+                  {error}
+                </div>
+              )}
+
+              {result && (
+                <div className="animate-fade-up">
+                  <TripSummary
+                    totalMiles={result.route.total_miles}
+                    totalDriveSecs={result.route.total_drive_secs}
+                    totalDays={result.day_logs.length}
+                    cycleHoursAfter={cycleAfter}
+                    usedFallback={result.route.used_fallback}
+                  />
+                </div>
+              )}
+            </>
           )}
         </aside>
 

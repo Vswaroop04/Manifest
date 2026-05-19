@@ -89,6 +89,7 @@ export function RouteMap({ geometry, events, currentCoords, pickupCoords, dropof
     >
       <MapContainer
         center={center}
+        
         zoom={5}
         style={{ height: "100%", width: "100%" }}
         zoomControl={false}
