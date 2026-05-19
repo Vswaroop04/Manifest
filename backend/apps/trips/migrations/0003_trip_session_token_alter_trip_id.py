@@ -5,20 +5,24 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('trips', '0002_alter_trip_id_alter_tripevent_event_type'),
+        ("trips", "0002_alter_trip_id_alter_tripevent_event_type"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='trip',
-            name='session_token',
+            model_name="trip",
+            name="session_token",
             field=models.UUIDField(blank=True, db_index=True, null=True),
         ),
         migrations.AlterField(
-            model_name='trip',
-            name='id',
-            field=models.UUIDField(default=apps.trips.models._uuid7, editable=False, primary_key=True, serialize=False),
+            model_name="trip",
+            name="id",
+            field=models.UUIDField(
+                default=apps.trips.models._uuid7,
+                editable=False,
+                primary_key=True,
+                serialize=False,
+            ),
         ),
     ]
