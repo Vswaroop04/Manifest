@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
 import { ArrowRight, MapPin, Loader2, AlertCircle, Clock } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import { getTripList, type TripSummaryItem } from "@/services/api";
 
 interface Props {
@@ -32,19 +32,53 @@ function StatusDot({ status }: { status: string }) {
   );
 }
 
+function TripCard({ trip, onSelect, loadingId }: { trip: TripSummaryItem; onSelect: (id: string) => void; loadingId: string | null }) {
+  const isLoading = loadingId === trip.id;
+  return (
+    <button
+      onClick={() => onSelect(trip.id)}
+      disabled={loadingId !== null}
+      className="w-full text-left rounded-xl border px-4 py-3.5 transition-colors disabled:opacity-60"
+      style={{
+        background: "var(--bg-elevated)",
+        borderColor: "var(--border)",
+      }}
+      onMouseEnter={(e) => (e.currentTarget.style.borderColor = "var(--border-bright)")}
+      onMouseLeave={(e) => (e.currentTarget.style.borderColor = "var(--border)")}
+    >
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex flex-col gap-1.5 min-w-0">
+          <div className="flex items-center gap-1.5 text-sm font-medium" style={{ color: "var(--text)" }}>
+            <MapPin size={12} style={{ color: "var(--orange)", flexShrink: 0 }} />
+            <span className="truncate">{trip.pickup_location}</span>
+            <ArrowRight size={11} style={{ color: "var(--text-dim)", flexShrink: 0 }} />
+            <span className="truncate">{trip.dropoff_location}</span>
+          </div>
+          <div className="flex items-center gap-2 text-xs" style={{ color: "var(--text-dim)", fontFamily: "var(--font-mono)" }}>
+            <StatusDot status={trip.status} />
+            <span>{formatDate(trip.departure_time)}</span>
+            <span style={{ color: "var(--border-bright)" }}>·</span>
+            <span>{formatTime(trip.departure_time)}</span>
+          </div>
+        </div>
+        <div className="shrink-0 mt-0.5">
+          {isLoading
+            ? <Loader2 size={14} className="animate-spin" style={{ color: "var(--orange)" }} />
+            : <ArrowRight size={14} style={{ color: "var(--text-dim)" }} />
+          }
+        </div>
+      </div>
+    </button>
+  );
+}
+
 export function TripHistory({ onSelect, loadingId }: Props) {
-  const [trips, setTrips] = useState<TripSummaryItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data: trips = [], isLoading, error } = useQuery({
+    queryKey: ["trips"],
+    queryFn: getTripList,
+  });
 
-  useEffect(() => {
-    getTripList()
-      .then(setTrips)
-      .catch(() => setError("Could not load trip history"))
-      .finally(() => setLoading(false));
-  }, []);
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center py-16 gap-2" style={{ color: "var(--text-dim)" }}>
         <Loader2 size={16} className="animate-spin" />
@@ -57,7 +91,7 @@ export function TripHistory({ onSelect, loadingId }: Props) {
     return (
       <div className="flex items-center gap-2 py-8 px-2 text-sm" style={{ color: "var(--red)" }}>
         <AlertCircle size={15} />
-        {error}
+        Could not load trip history
       </div>
     );
   }
@@ -74,46 +108,9 @@ export function TripHistory({ onSelect, loadingId }: Props) {
 
   return (
     <div className="flex flex-col gap-2">
-      {trips.map((trip) => {
-        const isLoading = loadingId === trip.id;
-        return (
-          <button
-            key={trip.id}
-            onClick={() => onSelect(trip.id)}
-            disabled={loadingId !== null}
-            className="w-full text-left rounded-xl border px-4 py-3.5 transition-colors disabled:opacity-60"
-            style={{
-              background: "var(--bg-elevated)",
-              borderColor: "var(--border)",
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.borderColor = "var(--border-bright)")}
-            onMouseLeave={(e) => (e.currentTarget.style.borderColor = "var(--border)")}
-          >
-            <div className="flex items-start justify-between gap-2">
-              <div className="flex flex-col gap-1.5 min-w-0">
-                <div className="flex items-center gap-1.5 text-sm font-medium" style={{ color: "var(--text)" }}>
-                  <MapPin size={12} style={{ color: "var(--orange)", flexShrink: 0 }} />
-                  <span className="truncate">{trip.pickup_location}</span>
-                  <ArrowRight size={11} style={{ color: "var(--text-dim)", flexShrink: 0 }} />
-                  <span className="truncate">{trip.dropoff_location}</span>
-                </div>
-                <div className="flex items-center gap-2 text-xs" style={{ color: "var(--text-dim)", fontFamily: "var(--font-mono)" }}>
-                  <StatusDot status={trip.status} />
-                  <span>{formatDate(trip.departure_time)}</span>
-                  <span style={{ color: "var(--border-bright)" }}>·</span>
-                  <span>{formatTime(trip.departure_time)}</span>
-                </div>
-              </div>
-              <div className="shrink-0 mt-0.5">
-                {isLoading
-                  ? <Loader2 size={14} className="animate-spin" style={{ color: "var(--orange)" }} />
-                  : <ArrowRight size={14} style={{ color: "var(--text-dim)" }} />
-                }
-              </div>
-            </div>
-          </button>
-        );
-      })}
+      {trips.map((trip) => (
+        <TripCard key={trip.id} trip={trip} onSelect={onSelect} loadingId={loadingId} />
+      ))}
     </div>
   );
 }

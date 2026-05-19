@@ -1,5 +1,6 @@
 import { lazy, Suspense, useState } from "react";
 import { Truck, RotateCcw, History } from "lucide-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { TripForm, type TripFormValues } from "@/components/TripForm/TripForm";
 import { TripSummary } from "@/components/TripSummary/TripSummary";
 import { TripHistory } from "@/components/TripHistory/TripHistory";
@@ -17,43 +18,38 @@ const RouteMap = lazy(() =>
 export default function App() {
   const { t } = useTranslation();
   const { activeTab, setActiveTab } = useTripStore();
-  const [isPending, setIsPending] = useState(false);
+  const queryClient = useQueryClient();
   const [result, setResult] = useState<TripPlanResponse | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [showHistory, setShowHistory] = useState(false);
   const [loadingHistoryId, setLoadingHistoryId] = useState<string | null>(null);
 
-  async function handleSubmit(values: TripFormValues) {
-    setIsPending(true);
-    setError(null);
-    try {
-      const data = await planTrip({
+  const planMutation = useMutation({
+    mutationFn: (values: TripFormValues) =>
+      planTrip({
         current_location: values.current_location,
         pickup_location: values.pickup_location,
         dropoff_location: values.dropoff_location,
         cycle_hours_used: values.cycle_hours_used,
-        // date-only field → send 8am so backend future-time check passes
         departure_time: values.departure_time,
-      });
+      }),
+    onSuccess: (data) => {
       setResult(data);
       setActiveTab("map");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
-    } finally {
-      setIsPending(false);
-    }
-  }
+      // New trip appears in history — invalidate the cached list
+      void queryClient.invalidateQueries({ queryKey: ["trips"] });
+    },
+  });
 
   async function loadHistoryTrip(id: string) {
     setLoadingHistoryId(id);
-    setError(null);
+    planMutation.reset();
     try {
       const data = await getTripDetail(id);
       setResult(data);
       setShowHistory(false);
       setActiveTab("map");
     } catch {
-      setError("Could not load that trip");
+      // error handled inline in TripHistory; nothing to surface here
     } finally {
       setLoadingHistoryId(null);
     }
@@ -62,6 +58,12 @@ export default function App() {
   const cycleAfter = result
     ? parseFloat(result.day_logs.at(-1)?.recap_70hr ?? "0")
     : 0;
+
+  const errorMessage = planMutation.error instanceof Error
+    ? planMutation.error.message
+    : planMutation.error
+      ? "Something went wrong"
+      : null;
 
   return (
     <div className="flex flex-col h-full">
@@ -97,7 +99,12 @@ export default function App() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => { setResult(null); setError(null); setShowHistory(false); setActiveTab("map"); }}
+              onClick={() => {
+                setResult(null);
+                planMutation.reset();
+                setShowHistory(false);
+                setActiveTab("map");
+              }}
               className="gap-1.5 text-xs"
             >
               <RotateCcw size={13} />
@@ -132,12 +139,12 @@ export default function App() {
           ) : (
             <>
               <TripForm
-                onSubmit={handleSubmit}
-                isPending={isPending}
+                onSubmit={(v) => planMutation.mutate(v)}
+                isPending={planMutation.isPending}
                 initialValues={result ?? undefined}
               />
 
-              {error && (
+              {errorMessage && (
                 <div
                   className="rounded-xl px-4 py-3 text-sm border animate-fade-up"
                   style={{
@@ -146,7 +153,7 @@ export default function App() {
                     color: "var(--red)",
                   }}
                 >
-                  {error}
+                  {errorMessage}
                 </div>
               )}
 
