@@ -107,26 +107,20 @@ export function AddressInput({
 
       {open && (
         <ul
-          className="absolute z-[100] w-full mt-1 rounded-lg border border-[var(--border-bright)] overflow-hidden shadow-2xl"
+          className="absolute z-[100] w-full mt-2 rounded-xl border border-[var(--border-bright)] overflow-hidden shadow-2xl"
           style={{ background: "var(--bg-elevated)" }}
         >
           {loading && suggestions.length === 0 && (
-            <li
-              className="flex items-center gap-2 px-3 py-3 text-sm"
-              style={{ color: "var(--text-dim)" }}
-            >
-              <Loader2 size={13} className="animate-spin" style={{ color: "var(--orange)" }} />
+            <li className="flex items-center gap-3 px-5 py-5 text-base" style={{ color: "var(--text-dim)" }}>
+              <Loader2 size={18} className="animate-spin shrink-0" style={{ color: "var(--orange)" }} />
               Searching US addresses…
             </li>
           )}
 
           {!loading && searched && suggestions.length === 0 && (
-            <li
-              className="flex items-center gap-2 px-3 py-3 text-sm"
-              style={{ color: "var(--text-dim)" }}
-            >
-              <SearchX size={13} />
-              No US results for "{value}"
+            <li className="flex items-center gap-3 px-5 py-5 text-base" style={{ color: "var(--text-dim)" }}>
+              <SearchX size={18} className="shrink-0" />
+              No results for "{value}"
             </li>
           )}
 
@@ -134,10 +128,13 @@ export function AddressInput({
             <li
               key={i}
               onMouseDown={() => select(s.label)}
-              className="flex items-center gap-2 px-3 py-2.5 text-sm cursor-pointer hover:bg-[var(--bg-hover)] transition-colors"
-              style={{ color: "var(--text)" }}
+              className="flex items-center gap-3 px-5 py-4 text-base cursor-pointer hover:bg-[var(--bg-hover)] transition-colors"
+              style={{
+                color: "var(--text)",
+                borderTop: i > 0 ? "1px solid var(--border)" : undefined,
+              }}
             >
-              <MapPin size={12} style={{ color: "var(--orange)", flexShrink: 0 }} />
+              <MapPin size={17} style={{ color: "var(--orange)", flexShrink: 0 }} />
               {s.label}
             </li>
           ))}

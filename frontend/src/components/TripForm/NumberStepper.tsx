@@ -65,9 +65,9 @@ export function NumberStepper({
   }
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const raw = e.target.value;
+    const raw = e.target.value.replace(/[^0-9.]/g, "");
     setText(raw);
-    if (raw === "" || raw === "-") {
+    if (raw === "") {
       onChange(0);
       return;
     }
@@ -105,7 +105,7 @@ export function NumberStepper({
         onBlur={handleBlur}
         placeholder={placeholder}
         className={cn(
-          "flex h-12 w-full rounded-lg border bg-[var(--bg-card)] pl-5 pr-14 py-3 text-base text-[var(--text)] placeholder:text-[var(--text-dim)] focus:outline-none focus:ring-2 transition-colors",
+          "flex h-14 w-full rounded-xl border bg-[var(--bg-card)] pl-6 pr-14 py-3 text-[15px] text-[var(--text)] placeholder:text-[var(--text-dim)] focus:outline-none focus:ring-2 transition-colors",
           invalid
             ? "border-[var(--red)] focus:border-[var(--red)] focus:ring-[rgba(255,23,68,0.15)]"
             : "border-[var(--border)] focus:border-[var(--orange)] focus:ring-[var(--orange-dim)]"
@@ -113,8 +113,8 @@ export function NumberStepper({
         style={{ fontFamily: "var(--font-mono)" }}
       />
       <div
-        className="absolute right-1.5 top-1.5 bottom-1.5 flex flex-col rounded-md overflow-hidden"
-        style={{ background: "var(--bg-elevated)" }}
+        className="absolute right-1.5 top-1.5 bottom-1.5 flex flex-col rounded-md overflow-hidden border border-[var(--border)]"
+        style={{ background: "var(--bg-card)" }}
       >
         <button
           type="button"
