@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Manifest — System Architecture</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #fff; display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 32px; }
+  </style>
+</head>
+<body>
+<svg width="1200" height="900" viewBox="0 0 1200 900" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    text { font-family: 'Caveat', cursive; fill: #1a1a1a; }
+    .h1  { font-size: 30px; font-weight: 700; }
+    .h2  { font-size: 19px; font-weight: 700; }
+    .h3  { font-size: 17px; font-weight: 600; }
+    .sm  { font-size: 14px; fill: #444; }
+    .xs  { font-size: 13px; fill: #666; font-style: italic; }
+    .dim { font-size: 13px; fill: #888; }
+    .tag { font-size: 20px; font-weight: 700; }
+  </style>
+
+  <defs>
+    <!-- hand-drawn wobble filter — applied only to shapes, not text -->
+    <filter id="sk" x="-8%" y="-8%" width="116%" height="116%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.045" numOctaves="4" seed="7" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="1.6" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+
+    <!-- main arrowhead -->
+    <marker id="arr" markerWidth="11" markerHeight="8" refX="10" refY="4" orient="auto">
+      <path d="M0,0.5 L10,4 L0,7.5 L1.8,4 Z" fill="#333"/>
+    </marker>
+    <!-- small / dim arrowhead -->
+    <marker id="arr2" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
+      <path d="M0,0.5 L8,3.5 L0,6.5 L1.5,3.5 Z" fill="#888"/>
+    </marker>
+  </defs>
+
+  <!-- ─── background ─────────────────────────────────────────────── -->
+  <rect width="1200" height="900" fill="#fff"/>
+
+  <!-- ─── page title ──────────────────────────────────────────────── -->
+  <text x="600" y="42" text-anchor="middle" class="h1">Manifest — System Architecture</text>
+  <line x1="120" y1="52" x2="1080" y2="52" stroke="#ccc" stroke-width="1" filter="url(#sk)"/>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       REQUIREMENTS BOXES
+  ══════════════════════════════════════════════════════════════ -->
+
+  <!-- Functional Requirements -->
+  <rect x="62" y="68" width="318" height="168" rx="14"
+        fill="none" stroke="#333" stroke-width="1.8" filter="url(#sk)"/>
+  <text x="222" y="94"  text-anchor="middle" class="h3">Functional Requirements</text>
+  <text x="82"  y="116" class="sm">→  Plan multi-day HOS-compliant routes</text>
+  <text x="82"  y="136" class="sm">→  Schedule rest, break &amp; fuel stops</text>
+  <text x="82"  y="156" class="sm">→  Leaflet map with event markers</text>
+  <text x="82"  y="176" class="sm">→  FMCSA log sheet PDF export</text>
+  <text x="82"  y="196" class="sm">→  Trip history + replay</text>
+  <text x="82"  y="216" class="sm">→  Address autocomplete (Photon)</text>
+
+  <!-- Non-Functional Requirements -->
+  <rect x="436" y="68" width="340" height="168" rx="14"
+        fill="none" stroke="#333" stroke-width="1.8" filter="url(#sk)"/>
+  <text x="606" y="94"  text-anchor="middle" class="h3">Non-Functional Requirements</text>
+  <text x="456" y="116" class="sm">→  &lt; 2 s end-to-end trip planning</text>
+  <text x="456" y="136" class="sm">→  Parallel geocoding  (3× speedup)</text>
+  <text x="456" y="156" class="sm">→  Parallel routing  (2× speedup)</text>
+  <text x="456" y="176" class="sm">→  Graceful fallback  ORS → OSRM</text>
+  <text x="456" y="196" class="sm">→  Redis geocode cache (24 hr TTL)</text>
+  <text x="456" y="216" class="sm">→  Zero external HOS libraries</text>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       "WHY NO QUEUES?" annotation
+  ══════════════════════════════════════════════════════════════ -->
+  <text x="292" y="298" class="tag">Why No QUEUES ?</text>
+  <text x="294" y="320" class="xs">geocode (parallel) + route (parallel) + HOS calc all finish in &lt; 2 s — no async queue needed</text>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       ARCHITECTURE NODES
+  ══════════════════════════════════════════════════════════════ -->
+
+  <!-- ── React + Vite (left) ──────────────────────────────────── -->
+  <rect x="54" y="368" width="182" height="96" rx="12"
+        fill="none" stroke="#333" stroke-width="1.8" filter="url(#sk)"/>
+  <text x="145" y="398" text-anchor="middle" class="h3">React + Vite</text>
+  <text x="145" y="418" text-anchor="middle" class="sm">TypeScript · TanStack Query</text>
+  <text x="145" y="436" text-anchor="middle" class="sm">Zustand · Leaflet · shadcn</text>
+  <text x="145" y="454" text-anchor="middle" class="xs">@react-pdf lazy-loaded</text>
+
+  <!-- arrow React → Django -->
+  <line x1="237" y1="416" x2="388" y2="416"
+        stroke="#333" stroke-width="1.6" stroke-dasharray="6,3"
+        marker-end="url(#arr)" filter="url(#sk)"/>
+  <text x="313" y="408" text-anchor="middle" class="xs">JSON / HTTP</text>
+
+  <!-- ── Python Django (centre) ───────────────────────────────── -->
+  <rect x="392" y="352" width="210" height="128" rx="12"
+        fill="none" stroke="#333" stroke-width="2.0" filter="url(#sk)"/>
+  <text x="497" y="382" text-anchor="middle" class="h3">Python (Django)</text>
+  <text x="497" y="402" text-anchor="middle" class="sm">REST Framework</text>
+  <text x="497" y="420" text-anchor="middle" class="sm">ThreadPoolExecutor</text>
+  <text x="497" y="438" text-anchor="middle" class="sm">HOS State Machine</text>
+  <text x="497" y="456" text-anchor="middle" class="sm">uuid7 · Redis client</text>
+  <text x="497" y="474" text-anchor="middle" class="xs">graceful fallback everywhere</text>
+
+  <!-- ── Photon Geocoding (top-right oval) ────────────────────── -->
+  <ellipse cx="840" cy="306" rx="126" ry="60"
+           fill="none" stroke="#333" stroke-width="1.8" filter="url(#sk)"/>
+  <text x="840" y="294" text-anchor="middle" class="h3">Photon</text>
+  <text x="840" y="312" text-anchor="middle" class="sm">Geocoding Provider</text>
+  <text x="840" y="330" text-anchor="middle" class="xs">Nominatim-based · OSM data</text>
+
+  <!-- arrow Django → Photon -->
+  <path d="M 604 375 Q 690 318 714 316"
+        fill="none" stroke="#333" stroke-width="1.6"
+        marker-end="url(#arr)" filter="url(#sk)"/>
+  <text x="652" y="330" text-anchor="middle" class="xs">3 parallel</text>
+  <text x="652" y="344" text-anchor="middle" class="xs">requests</text>
+
+  <!-- ── ORS + OSRM fallback (right oval) ─────────────────────── -->
+  <ellipse cx="852" cy="452" rx="126" ry="60"
+           fill="none" stroke="#333" stroke-width="1.8" filter="url(#sk)"/>
+  <text x="852" y="438" text-anchor="middle" class="h3">ORS</text>
+  <text x="852" y="458" text-anchor="middle" class="sm">Routing Provider</text>
+  <text x="852" y="476" text-anchor="middle" class="xs">truck restrictions · OSRM fallback</text>
+
+  <!-- arrow Django → ORS -->
+  <path d="M 604 430 Q 680 438 726 448"
+        fill="none" stroke="#333" stroke-width="1.6"
+        marker-end="url(#arr)" filter="url(#sk)"/>
+  <text x="664" y="424" text-anchor="middle" class="xs">2 calls (full + segment)</text>
+
+  <!-- ── PostgreSQL diamond (bottom-left) ─────────────────────── -->
+  <polygon points="418,630 498,690 418,750 338,690"
+           fill="none" stroke="#333" stroke-width="1.8" filter="url(#sk)"/>
+  <text x="418" y="684" text-anchor="middle" class="h3">Postgres</text>
+  <text x="418" y="702" text-anchor="middle" class="sm">trip + event data</text>
+
+  <!-- arrow Django → Postgres -->
+  <line x1="455" y1="480" x2="430" y2="628"
+        stroke="#333" stroke-width="1.5"
+        marker-end="url(#arr)" filter="url(#sk)"/>
+
+  <!-- ── Redis diamond (bottom-right) ─────────────────────────── -->
+  <polygon points="618,630 698,690 618,750 538,690"
+           fill="none" stroke="#333" stroke-width="1.8" filter="url(#sk)"/>
+  <text x="618" y="684" text-anchor="middle" class="h3">Redis</text>
+  <text x="618" y="702" text-anchor="middle" class="sm">geocode cache</text>
+
+  <!-- arrow Django → Redis -->
+  <line x1="555" y1="480" x2="598" y2="628"
+        stroke="#333" stroke-width="1.5"
+        marker-end="url(#arr)" filter="url(#sk)"/>
+  <text x="594" y="560" text-anchor="middle" class="xs">24 hr TTL</text>
+  <text x="594" y="574" text-anchor="middle" class="xs">graceful fallback</text>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       HOS ENGINE dashed box (bottom)
+  ══════════════════════════════════════════════════════════════ -->
+  <rect x="54" y="776" width="580" height="106" rx="14"
+        fill="none" stroke="#555" stroke-width="1.6" stroke-dasharray="8,4" filter="url(#sk)"/>
+  <text x="344" y="802" text-anchor="middle" class="h3">HOS Engine — hos_calculator.py</text>
+  <text x="344" y="824" text-anchor="middle" class="sm">11 hr drive limit  ·  14 hr on-duty window  ·  8 hr break trigger  ·  70 hr / 8-day cycle</text>
+  <text x="344" y="844" text-anchor="middle" class="sm">Pure Python · Decimal arithmetic · deterministic state machine · no external libs</text>
+  <text x="344" y="864" text-anchor="middle" class="xs">FMCSA 49 CFR Part 395</text>
+
+  <!-- dashed arrow Django → HOS box -->
+  <line x1="480" y1="480" x2="360" y2="774"
+        stroke="#888" stroke-width="1.2" stroke-dasharray="5,4"
+        marker-end="url(#arr2)" filter="url(#sk)"/>
+  <text x="388" y="630" text-anchor="middle" class="dim">drives via</text>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       BUNDLE breakdown box (bottom-right)
+  ══════════════════════════════════════════════════════════════ -->
+  <rect x="756" y="556" width="308" height="142" rx="12"
+        fill="none" stroke="#aaa" stroke-width="1.4" stroke-dasharray="5,3" filter="url(#sk)"/>
+  <text x="910" y="580" text-anchor="middle" class="h3" style="fill:#555">Frontend Chunks</text>
+  <text x="772" y="602" class="sm">vendor-react  →  startup bundle</text>
+  <text x="772" y="622" class="sm">vendor-map    →  lazy  (Leaflet)</text>
+  <text x="772" y="642" class="sm">vendor-pdf    →  lazy  (492 KB gz)</text>
+  <text x="772" y="662" class="sm">main startup  →  &lt; 50 KB gz</text>
+  <text x="910" y="686" text-anchor="middle" class="xs">Brotli + Gzip at build · loads on demand</text>
+
+  <!-- key decision callout top-right -->
+  <rect x="844" y="68" width="310" height="168" rx="14"
+        fill="none" stroke="#aaa" stroke-width="1.4" stroke-dasharray="5,3" filter="url(#sk)"/>
+  <text x="999" y="94"  text-anchor="middle" class="h3" style="fill:#555">Key Decisions</text>
+  <text x="860" y="116" class="sm">✦  ORS for truck-aware routing</text>
+  <text x="860" y="136" class="sm">✦  Photon (self-hostable OSM geocoder)</text>
+  <text x="860" y="156" class="sm">✦  uuid7 → time-ordered DB primary keys</text>
+  <text x="860" y="176" class="sm">✦  Decimal (not float) for mile math</text>
+  <text x="860" y="196" class="sm">✦  SVG log sheet → vector PDF (not canvas)</text>
+  <text x="860" y="216" class="sm">✦  UTC everywhere — no timezone drift</text>
+
+</svg>
+</body>
+</html>

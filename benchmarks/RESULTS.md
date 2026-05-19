@@ -207,3 +207,99 @@ ever trigger. But it's there if needed.
 
 Total external cost: $0. No credit cards. One free ORS API key for routing.
 Geocoding needs no keys at all.
+
+---
+
+## Benchmark Data Tables
+
+Raw data from `results/geocoding_20260518_154441.json` and `results/routing_20260518_154631.json`.
+5 runs per query. Latency in milliseconds. Distance error in kilometers.
+
+---
+
+### Geocoding — Latency by Query Type (ms)
+
+| Query | Nominatim p50 | p95 | p99 | Photon p50 | p95 | p99 | ORS p50 | p95 | p99 | LocationIQ p50 | p95 | p99 |
+|-------|--------------|-----|-----|-----------|-----|-----|---------|-----|-----|---------------|-----|-----|
+| Chicago, IL | 71 | 111 | 115 | 677 | 727 | 733 | 768 | 954 | 989 | 807 | 1,539 | 1,542 |
+| Dallas, TX | 76 | 81 | 81 | 705 | 719 | 721 | 766 | 818 | 826 | 622 | 2,646 | 2,878 |
+| Los Angeles, CA | 76 | 83 | 84 | 672 | 716 | 723 | 789 | 820 | 823 | 663 | 1,384 | 1,488 |
+| Memphis, TN | 81 | 97 | 98 | 657 | 706 | 708 | 758 | 776 | 776 | 1,121 | 1,394 | 1,446 |
+| 350 Fifth Ave, NYC (street) | 76 | 83 | 83 | 765 | 815 | 817 | 795 | 823 | 823 | 870 | 1,042 | 1,063 |
+| I-40 W, Amarillo (highway) | 78 | 94 | 96 | 690 | 732 | 738 | 785 | 1,605 | 1,767 | 730 | 1,730 | 1,894 |
+| 77001 (zip code) | 71 | 81 | 83 | 674 | 747 | 756 | 769 | 834 | 838 | 1,455 | 2,408 | 2,515 |
+| Springfield (ambiguous) | 73 | 82 | 83 | 661 | 777 | 791 | 865 | 876 | 877 | 561 | 787 | 802 |
+| **Avg across all queries** | **76** | **89** | **90** | **688** | **742** | **748** | **787** | **938** | **965** | **854** | **1,616** | **1,703** |
+
+> Photon's key strength: p50 and p99 are nearly identical (688ms vs 748ms) — variance is only 60ms.
+> LocationIQ's p99 on Dallas is 4.6x its p50 — you never know when it'll spike.
+
+---
+
+### Geocoding — Accuracy by Query Type (distance error, km)
+
+| Query | Nominatim | Photon | ORS | LocationIQ |
+|-------|-----------|--------|-----|-----------|
+| Chicago, IL | 0.53 | 0.53 | 2.55 | 0.53 |
+| Dallas, TX | 0.05 | 0.05 | 4.66 | 0.05 |
+| Los Angeles, CA | 0.19 | 0.19 | 1.27 | 0.19 |
+| Memphis, TN | 0.46 | 0.46 | 9.53 | 0.46 |
+| 350 Fifth Ave, NYC (street address) | 23.94 | **0.006** | 7.39 | 23.99 |
+| I-40 W, Amarillo (highway) | 10.40 | 5.55 | 8.66 | 3.56 |
+| 77001 (zip code) | 3.29 | 3.34 | 573.76 | 3.34 |
+| Springfield (ambiguous) | — | — | — | — |
+| **Avg (excl. ambiguous + zip outlier)** | **5.81** | **1.30** | **5.68** | **5.30** |
+
+> ORS zip error: returned a dam in Latimer County, OK — 573 km from Houston. Wrong state entirely.
+> Photon street address: 0.006 km from Empire State Building. Every other provider missed by 7–24 km.
+
+---
+
+### Geocoding — Provider Comparison Summary
+
+| Provider | Role | Avg p50 (ms) | Avg p99 (ms) | Latency variance | Street addr error | Zip error | API key | Cost |
+|----------|------|-------------|-------------|-----------------|------------------|-----------|---------|------|
+| Photon | Primary | 688 | 748 | Low (±60ms) | 0.006 km | 3.34 km | No | Free |
+| Nominatim | Backup | 76 | 90 | Very low (±14ms) | 23.94 km | 3.29 km | No | Free |
+| ORS | Ruled out | 787 | 965 | Medium (±178ms) | 7.39 km | 573.76 km | Yes | Free tier |
+| LocationIQ | Ruled out | 854 | 1,703 | High (±849ms) | 23.99 km | 3.34 km | Yes | Free tier |
+
+---
+
+### Routing — Latency by Route (ms)
+
+| Route | ORS HGV p50 | p95 | p99 | stdev | OSRM p50 | p95 | p99 | stdev |
+|-------|------------|-----|-----|-------|---------|-----|-----|-------|
+| Chicago to Indianapolis (183 mi) | 741 | 815 | 821 | 43 | 699 | 1,858 | 2,082 | 644 |
+| Dallas to Atlanta (452 mi) | 941 | 959 | 961 | 21 | 693 | 748 | 750 | 32 |
+| Chicago to LA (2,015 mi) | 1,152 | 1,180 | 1,182 | 27 | 1,075 | 1,214 | 1,218 | 76 |
+| NYC to LA (2,793 mi) | 1,174 | 1,198 | 1,199 | 51 | 1,362 | 2,610 | 2,838 | 705 |
+| Multi-stop (2,399 mi) | 1,140 | 1,165 | 1,169 | 174 | 1,196 | 1,703 | 1,787 | 287 |
+| **Avg across routes** | **1,030** | **1,063** | **1,066** | **63** | **1,005** | **1,827** | **1,935** | **349** |
+
+> OSRM stdev is 5–14x higher than ORS — the shared demo server has no SLA.
+> ORS is rock-steady: p50 and p99 differ by only 36ms on average.
+
+---
+
+### Routing — Accuracy and Capabilities
+
+| Route | Expected (mi) | ORS result | ORS error | OSRM result | OSRM error |
+|-------|--------------|-----------|----------|------------|-----------|
+| Chicago to Indianapolis | 182 | 182.8 | 0.45% | 180.7 | 0.71% |
+| Dallas to Atlanta | 435 | 451.9 | 3.86% | 452.3 | 3.76% |
+| Chicago to LA | 2,012 | 2,014.9 | 0.25% | 2,018.1 | 0.10% |
+| NYC to LA | 2,790 | 2,793.2 | 0.12% | 2,798.4 | 0.30% |
+| Multi-stop | ~2,025 | 2,398.8 | 18.4% | 2,404.8 | 18.2% |
+
+| Capability | ORS HGV | OSRM (demo) |
+|-----------|---------|------------|
+| Truck profile (HGV) | Yes | No (car only) |
+| Full route geometry | Yes | Yes |
+| Turn-by-turn directions | Yes | Yes |
+| Free tier quota | 2,000 req/day | Unlimited (shared) |
+| SLA / reliability | Documented | None |
+| Self-hostable | Yes | Yes |
+
+> Multi-stop ~18% error is the same for both providers — inherent waypoint ordering issue, not provider-specific.
+> Single point-to-point routes are consistently under 4% error.
