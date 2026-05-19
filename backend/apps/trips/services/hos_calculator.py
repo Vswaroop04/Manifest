@@ -282,8 +282,14 @@ def calculate(
                 )
         else:
             # A HOS rule fires — drive to the limit then stop
-            drive_time = timedelta(hours=float(max_drive_miles / avg_speed))
-            _append_drive_end(events, state, drive_time, max_drive_miles)
+            if max_drive_miles > Decimal("0"):
+                drive_time = timedelta(hours=float(max_drive_miles / avg_speed))
+                _append_drive_end(events, state, drive_time, max_drive_miles)
+            else:
+                # Already at limit with no miles to drive — remove the
+                # phantom drive_start emitted at the tail of the last iteration
+                if events and events[-1].event_type == "drive_start":
+                    events.pop()
 
             if state.current_mile >= total_miles:
                 break

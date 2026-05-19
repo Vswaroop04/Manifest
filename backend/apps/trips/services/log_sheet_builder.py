@@ -26,12 +26,27 @@ class DayLogData:
 
 _STATUS_MAP: dict[str, str] = {
     "break": "off_duty",
-    "rest": "off_duty",
+    "rest": "sleeper",
     "off_duty": "off_duty",
     "fuel": "on_duty_nd",
     "pickup": "on_duty_nd",
     "dropoff": "on_duty_nd",
 }
+
+
+def _merge_consecutive(
+    segs: list[tuple[str, int, int]],
+) -> list[tuple[str, int, int]]:
+    if not segs:
+        return segs
+    merged = [segs[0]]
+    for status, s, e in segs[1:]:
+        prev_status, prev_s, prev_e = merged[-1]
+        if status == prev_status and s == prev_e:
+            merged[-1] = (prev_status, prev_s, e)
+        else:
+            merged.append((status, s, e))
+    return merged
 
 
 def _add_span(
@@ -100,6 +115,7 @@ def build(events: list[TripEventData]) -> list[DayLogData]:
         if cursor < 1440:
             filled.append(("off_duty", cursor, 1440))
 
+        filled = _merge_consecutive(filled)
         segments = [Segment(status=s, start_min=a, end_min=b) for s, a, b in filled]
 
         def total_hrs(status_name: str) -> Decimal:

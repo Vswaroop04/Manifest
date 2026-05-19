@@ -37,11 +37,16 @@ def plan(
         current_location, pickup_location, dropoff_location
     )
 
-    route = get_route([current_coords, pickup_coords, dropoff_coords])
+    with ThreadPoolExecutor(max_workers=2) as ex:
+        full_future = ex.submit(get_route, [current_coords, pickup_coords, dropoff_coords])
+        pickup_segment_future = ex.submit(get_route, [current_coords, pickup_coords])
+
+    route = full_future.result()
+    pickup_miles = pickup_segment_future.result().total_miles
 
     pickup_waypoint = Waypoint(
         label=pickup_location,
-        mile_marker=route.total_miles / Decimal("2"),
+        mile_marker=pickup_miles,
         event_type="pickup",
         coords=pickup_coords,
     )
