@@ -57,6 +57,9 @@ export default defineConfig({
           if (id.includes("node_modules/zustand") || id.includes("node_modules/lucide-react")) {
             return "vendor-ui";
           }
+          if (id.includes("node_modules/@react-pdf") || id.includes("node_modules/pdfkit") || id.includes("node_modules/fontkit") || id.includes("node_modules/linebreak")) {
+            return "vendor-pdf";
+          }
         },
       },
     },

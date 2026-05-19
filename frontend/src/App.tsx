@@ -1,5 +1,5 @@
 import { lazy, Suspense, useState } from "react";
-import { Truck, RotateCcw, History } from "lucide-react";
+import { Truck, RotateCcw, History, Download } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { TripForm, type TripFormValues } from "@/components/TripForm/TripForm";
 import { TripSummary } from "@/components/TripSummary/TripSummary";
@@ -58,6 +58,37 @@ export default function App() {
   const cycleAfter = result
     ? parseFloat(result.day_logs.at(-1)?.recap_70hr ?? "0")
     : 0;
+
+  const [downloadingPDF, setDownloadingPDF] = useState(false);
+
+  async function downloadLogs() {
+    if (!result) return;
+    setDownloadingPDF(true);
+    try {
+      const [{ pdf }, { LogSheetPDF }] = await Promise.all([
+        import("@react-pdf/renderer"),
+        import("@/components/LogSheetPDF/LogSheetPDF"),
+      ]);
+      const blob = await pdf(
+        <LogSheetPDF
+          dayLogs={result.day_logs}
+          pickupLocation={result.pickup_location}
+          dropoffLocation={result.dropoff_location}
+          totalMiles={result.route.total_miles}
+          departureTime={result.departure_time}
+          cycleHoursUsed={result.cycle_hours_used}
+        />
+      ).toBlob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `trip-log-${result.departure_time.slice(0, 10)}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } finally {
+      setDownloadingPDF(false);
+    }
+  }
 
   const errorMessage = planMutation.error instanceof Error
     ? planMutation.error.message
@@ -182,10 +213,24 @@ export default function App() {
                 onValueChange={(v) => setActiveTab(v as "map" | "logs")}
                 className="flex flex-col flex-1 min-h-0"
               >
-                <TabsList className="self-start">
-                  <TabsTrigger value="map">{t("results.tabs.map")}</TabsTrigger>
-                  <TabsTrigger value="logs">{t("results.tabs.logs")}</TabsTrigger>
-                </TabsList>
+                <div className="flex items-center justify-between">
+                  <TabsList className="self-start">
+                    <TabsTrigger value="map">{t("results.tabs.map")}</TabsTrigger>
+                    <TabsTrigger value="logs">{t("results.tabs.logs")}</TabsTrigger>
+                  </TabsList>
+                  {activeTab === "logs" && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => void downloadLogs()}
+                      disabled={downloadingPDF}
+                      className="gap-1.5 text-xs"
+                    >
+                      <Download size={13} />
+                      {downloadingPDF ? "Generating…" : "Download PDF"}
+                    </Button>
+                  )}
+                </div>
 
                 <TabsContent value="map" className="flex-1 min-h-0">
                   <Suspense
